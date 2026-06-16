@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650">
+  <rect width="900" height="650" fill="#fffaf1"/>
+  <circle cx="720" cy="120" r="180" fill="#f5b041" opacity="0.3"/>
+  <circle cx="160" cy="520" r="220" fill="#e67e22" opacity="0.2"/>
+  <path d="M0 220 C200 120 300 300 500 210 S760 150 900 250 L900 0 L0 0 Z" fill="#f5b041" opacity="0.18"/>
+  <text x="450" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="800" fill="#d35400">Memories</text>
+</svg>

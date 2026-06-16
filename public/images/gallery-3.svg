@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650">
+  <rect width="900" height="650" fill="#fff4dc"/>
+  <circle cx="240" cy="240" r="220" fill="#e67e22" opacity="0.18"/>
+  <circle cx="700" cy="460" r="230" fill="#f5b041" opacity="0.28"/>
+  <path d="M0 500 C160 420 310 560 470 490 S760 430 900 520 L900 650 L0 650 Z" fill="#fffaf1"/>
+  <text x="450" y="330" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="800" fill="#d35400">Forever</text>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650">
+  <rect width="900" height="650" fill="#fff4df"/>
+  <circle cx="180" cy="160" r="160" fill="#f5b041" opacity="0.35"/>
+  <circle cx="720" cy="500" r="210" fill="#e67e22" opacity="0.22"/>
+  <path d="M0 430 C180 360 310 500 480 420 S750 330 900 410 L900 650 L0 650 Z" fill="#fef9f0"/>
+  <text x="450" y="330" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="800" fill="#d35400">Celebration</text>
+</svg>

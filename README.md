@@ -16,7 +16,25 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Demo Data
+
+Use the seeded demo account to log in and view the dashboard data:
+
+| Field | Value |
+| --- | --- |
+| Email | `admin@example.com` |
+| Password | `Password123!` |
+| Public wedding website | `/w/cherilyn-lester` |
+
+To create or refresh the local demo data, run:
+
+```bash
+docker compose up -d
+npx prisma db push
+npm run db:seed
+```
+
+This seed resets the local database and creates demo guests, RSVPs, invitation links, and QR codes.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 

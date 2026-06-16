@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  COUPLE_ADMIN
+  EVENT_STAFF
+}
+
+enum WeddingStatus {
+  PLANNING
+  ENGAGED
+  CONFIRMED
+  COMPLETED
+}
+
+enum RsvpStatus {
+  PENDING
+  GOING
+  DECLINED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(COUPLE_ADMIN)
+  weddings      Wedding[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Wedding {
+  id             String        @id @default(cuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brideName      String
+  groomName      String
+  slug           String        @unique
+  date           DateTime
+  venue          String
+  venueAddress   String?
+  theme          String
+  coverImage     String?
+  galleryImages  Json          @default("[]")
+  status         WeddingStatus @default(PLANNING)
+  guests         Guest[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Guest {
+  id           String   @id @default(cuid())
+  weddingId    String
+  wedding      Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  fullName     String
+  email        String?
+  phone        String?
+  groupName    String?
+  inviteCode   String   @unique
+  qrCode       String?
+  seatsAllowed Int      @default(1)
+  rsvp         Rsvp?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([weddingId])
+  @@index([groupName])
+}
+
+model Rsvp {
+  id           String     @id @default(cuid())
+  guestId      String     @unique
+  guest        Guest      @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  status       RsvpStatus @default(PENDING)
+  guestCount   Int        @default(1)
+  note         String?
+  submittedAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
