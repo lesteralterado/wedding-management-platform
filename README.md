@@ -36,6 +36,8 @@ npm run db:seed
 
 This seed resets the local database and creates demo guests, RSVPs, invitation links, and QR codes.
 
+If login shows `Invalid email or password`, make sure Postgres is running and the seed has been applied. The demo login will not work until the database is available and seeded.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
