@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { requireCoupleAdmin } from "@/lib/auth/rbac";
+import { requireWeddingAccess } from "@/lib/wedding/current";
 
 export async function POST(request: Request) {
-  const user = await requireCoupleAdmin();
   const body = await request.json();
-
-  const wedding = await prisma.wedding.findFirst({ where: { id: body.weddingId, userId: user.id } });
-  if (!wedding) return NextResponse.json({ error: "Wedding not found." }, { status: 404 });
+  const access = await requireWeddingAccess(body.weddingId, "guests:write");
 
   const rows = body.rows ?? [];
   if (!Array.isArray(rows) || !rows.length) return NextResponse.json({ error: "No rows to import." }, { status: 400 });
 
   const guests = rows.map((row: { fullName: string; email?: string; phone?: string; groupName?: string; seatsAllowed: number }) => ({
-    weddingId: wedding.id,
+    weddingId: access.wedding!.id,
     fullName: row.fullName,
     email: row.email || null,
     phone: row.phone || null,

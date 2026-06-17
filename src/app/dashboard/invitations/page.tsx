@@ -1,13 +1,18 @@
+import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { InvitationList } from "@/components/invitations/invitation-list";
 import { getInvitations } from "@/features/invitations/queries";
-import { getCurrentWeddingOrRedirect } from "@/lib/wedding/current";
+import { hasPermission } from "@/lib/auth/rbac";
+import { getDashboardAccessOrRedirect } from "@/lib/wedding/current";
 
 export default async function InvitationsPage() {
-  const wedding = await getCurrentWeddingOrRedirect();
+  const access = await getDashboardAccessOrRedirect();
+  const wedding = access.wedding;
   if (!wedding) return <EmptyState />;
+  if (!hasPermission(access.user.role, access.weddingRole, "invitations:read")) redirect("/dashboard");
 
   const guests = await getInvitations(wedding.id);
+  const canWrite = hasPermission(access.user.role, access.weddingRole, "invitations:write");
 
   return (
     <div className="space-y-6">
@@ -18,7 +23,7 @@ export default async function InvitationsPage() {
       </section>
       <Card>
         <CardHeader><CardTitle>Guest invitations</CardTitle><CardDescription>Copy links, generate QR codes, or email invitations to each guest.</CardDescription></CardHeader>
-        <CardContent><InvitationList guests={guests} weddingId={wedding.id} /></CardContent>
+        <CardContent><InvitationList guests={guests} weddingId={wedding.id} readOnly={!canWrite} /></CardContent>
       </Card>
     </div>
   );

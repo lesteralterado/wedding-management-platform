@@ -1,12 +1,16 @@
+import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getRecentRsvps } from "@/features/rsvp/queries";
-import { getCurrentWeddingOrRedirect } from "@/lib/wedding/current";
+import { hasPermission } from "@/lib/auth/rbac";
+import { getDashboardAccessOrRedirect } from "@/lib/wedding/current";
 
 export default async function RsvpsPage() {
-  const wedding = await getCurrentWeddingOrRedirect();
+  const access = await getDashboardAccessOrRedirect();
+  const wedding = access.wedding;
   if (!wedding) return <EmptyState />;
+  if (!hasPermission(access.user.role, access.weddingRole, "rsvps:read")) redirect("/dashboard");
 
   const rsvps = await getRecentRsvps(wedding.id);
 

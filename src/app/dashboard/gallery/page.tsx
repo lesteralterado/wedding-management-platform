@@ -10,6 +10,17 @@ import { GalleryGrid } from "@/components/wedding/gallery-grid";
 export default function GalleryPage() {
   const [images, setImages] = React.useState<string[]>([]);
   const [pending, setPending] = React.useState(false);
+  const [weddingId, setWeddingId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    async function loadWedding() {
+      const response = await fetch("/api/guests");
+      if (!response.ok) return;
+      const payload = await response.json();
+      setWeddingId(payload.weddings?.[0]?.id ?? null);
+    }
+    loadWedding();
+  }, []);
 
   async function upload(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -17,6 +28,7 @@ export default function GalleryPage() {
 
     setPending(true);
     const formData = new FormData();
+    if (weddingId) formData.append("weddingId", weddingId);
     files.forEach((file) => formData.append("files", file));
 
     const response = await fetch("/api/gallery", { method: "POST", body: formData });

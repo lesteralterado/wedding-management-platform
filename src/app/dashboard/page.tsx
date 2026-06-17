@@ -6,13 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WeddingStatusBadge } from "@/components/wedding/wedding-status-badge";
 import { getDashboardMetrics } from "@/features/dashboard/queries";
-import { getCurrentWeddingOrRedirect } from "@/lib/wedding/current";
+import { hasPermission } from "@/lib/auth/rbac";
+import { getDashboardAccessOrRedirect } from "@/lib/wedding/current";
 
 export default async function DashboardPage() {
-  const wedding = await getCurrentWeddingOrRedirect();
+  const access = await getDashboardAccessOrRedirect();
+  const wedding = access.wedding;
   if (!wedding) redirect("/dashboard/wedding");
 
+  if (!hasPermission(access.user.role, access.weddingRole, "dashboard:read")) {
+    redirect(access.weddingRole === "PHOTOGRAPHER" ? "/dashboard/gallery" : "/dashboard");
+  }
+
   const metrics = await getDashboardMetrics(wedding.id);
+  const canManageGuests = hasPermission(access.user.role, access.weddingRole, "guests:write");
+  const canManageWedding = hasPermission(access.user.role, access.weddingRole, "wedding:write");
+  const canManageInvitations = hasPermission(access.user.role, access.weddingRole, "invitations:write");
 
   return (
     <div className="space-y-8">
@@ -26,16 +35,16 @@ export default async function DashboardPage() {
         </div>
         <div className="flex flex-wrap gap-3">
           <Link href={`/w/${wedding.slug}`}><Button variant="outline">View website</Button></Link>
-          <Link href="/dashboard/guests"><Button>Add guests</Button></Link>
+          {canManageGuests && <Link href="/dashboard/guests"><Button>Add guests</Button></Link>}
         </div>
       </section>
 
       <AnalyticsOverview {...metrics} />
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <SetupCard icon={<UsersRound className="h-5 w-5" />} title="Guest list" text={`${metrics.total} guests ready for invite codes.`} href="/dashboard/guests" />
-        <SetupCard icon={<MailCheck className="h-5 w-5" />} title="Invitations" text="Generate QR codes and share personalized links." href="/dashboard/invitations" />
-        <SetupCard icon={<CalendarDays className="h-5 w-5" />} title="Wedding details" text="Polish your public microsite and event details." href="/dashboard/wedding" />
+        {canManageGuests && <SetupCard icon={<UsersRound className="h-5 w-5" />} title="Guest list" text={`${metrics.total} guests ready for invite codes.`} href="/dashboard/guests" />}
+        {canManageInvitations && <SetupCard icon={<MailCheck className="h-5 w-5" />} title="Invitations" text="Generate QR codes and share personalized links." href="/dashboard/invitations" />}
+        {canManageWedding && <SetupCard icon={<CalendarDays className="h-5 w-5" />} title="Wedding details" text="Polish your public microsite and event details." href="/dashboard/wedding" />}
       </section>
     </div>
   );

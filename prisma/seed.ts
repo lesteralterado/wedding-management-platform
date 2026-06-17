@@ -3,10 +3,8 @@ import bcrypt from "bcryptjs";
 import { generateQrSvg } from "../src/lib/qr/generate";
 
 const prisma = new PrismaClient();
-const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 const passwordHash = await bcrypt.hash("Password123!", 12);
-
-type DemoRsvpStatus = "PENDING" | "GOING" | "DECLINED";
 
 function inviteCodeFor(fullName: string) {
   const normalized = fullName

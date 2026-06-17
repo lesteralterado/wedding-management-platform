@@ -8,8 +8,18 @@ datasource db {
 }
 
 enum Role {
-  COUPLE_ADMIN
-  EVENT_STAFF
+  SUPER_ADMIN
+  CUSTOMER
+  STAFF
+}
+
+enum WeddingRole {
+  OWNER
+  CO_ORGANIZER
+  PLANNER
+  STAFF
+  RECEPTIONIST
+  PHOTOGRAPHER
 }
 
 enum WeddingStatus {
@@ -26,20 +36,22 @@ enum RsvpStatus {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String
-  email         String    @unique
+  email         String        @unique
   passwordHash  String
-  role          Role      @default(COUPLE_ADMIN)
+  role          Role          @default(CUSTOMER)
   weddings      Wedding[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  staffRecords  WeddingStaff[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model Wedding {
   id             String        @id @default(cuid())
   userId         String
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  staffRecords   WeddingStaff[]
   brideName      String
   groomName      String
   slug           String        @unique
@@ -53,6 +65,21 @@ model Wedding {
   guests         Guest[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+}
+
+model WeddingStaff {
+  id          String      @id @default(cuid())
+  weddingId   String
+  wedding     Wedding     @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        WeddingRole
+  permissions Json        @default({})
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([userId, weddingId])
+  @@index([weddingId])
 }
 
 model Guest {

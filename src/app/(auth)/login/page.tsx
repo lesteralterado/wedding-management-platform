@@ -1,6 +1,7 @@
 import { LoginForm } from "./form";
 import { CalendarHeart } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   return (
@@ -17,10 +18,13 @@ export default function LoginPage() {
               <h1 className="font-display text-4xl font-black tracking-tight md:text-5xl">Welcome back, planner.</h1>
               <p className="text-muted-foreground">Sign in to manage invitations, guests, RSVPs, and your wedding website.</p>
             </div>
-            <LoginForm />
+          <LoginForm />
             <p className="text-sm text-muted-foreground">
               New here? <Link href="/register" className="font-semibold text-accent hover:text-amber-700">Create an account</Link>
             </p>
+            <form action="/api/demo" method="POST">
+              <Button variant="secondary" className="w-full" type="submit">Try demo</Button>
+            </form>
           </div>
         </section>
         <aside className="relative hidden overflow-hidden bg-[#f5b041] lg:flex">

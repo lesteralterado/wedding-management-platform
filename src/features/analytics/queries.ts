@@ -1,7 +1,13 @@
 import "server-only";
 import { prisma } from "@/lib/db/prisma";
+import { isDemoMode } from "@/lib/auth/demo";
+import { getMockAnalytics } from "@/lib/demo/demo-data";
 
 export async function getAnalytics(weddingId: string) {
+  if (await isDemoMode()) {
+    return getMockAnalytics();
+  }
+
   const guests = await prisma.guest.findMany({
     where: { weddingId },
     include: { rsvp: true },

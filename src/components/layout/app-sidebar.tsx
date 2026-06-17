@@ -2,34 +2,57 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, CalendarHeart, GalleryVerticalEnd, Home, Mail, MapPin, Settings2, UsersRound } from "lucide-react";
+import { BarChart3, Building2, CalendarHeart, GalleryVerticalEnd, Home, Mail, Settings2, ShieldCheck, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
+import type { UserRole, WeddingRole } from "@/types/domain";
 
-const nav = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/dashboard/wedding", label: "Wedding Details", icon: CalendarHeart },
-  { href: "/dashboard/guests", label: "Guests", icon: UsersRound },
-  { href: "/dashboard/invitations", label: "Invitations", icon: Mail },
-  { href: "/dashboard/rsvps", label: "RSVPs", icon: Mail },
-  { href: "/dashboard/gallery", label: "Gallery", icon: GalleryVerticalEnd },
-  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings2 },
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  roles?: WeddingRole[];
+};
+
+const weddingNav: NavItem[] = [
+  { href: "/dashboard", label: "Dashboard", icon: Home, roles: ["OWNER", "CO_ORGANIZER", "PLANNER", "STAFF", "RECEPTIONIST"] },
+  { href: "/dashboard/wedding", label: "Wedding Details", icon: CalendarHeart, roles: ["OWNER", "CO_ORGANIZER"] },
+  { href: "/dashboard/guests", label: "Guests", icon: UsersRound, roles: ["OWNER", "CO_ORGANIZER", "PLANNER", "STAFF", "RECEPTIONIST"] },
+  { href: "/dashboard/invitations", label: "Invitations", icon: Mail, roles: ["OWNER", "CO_ORGANIZER"] },
+  { href: "/dashboard/rsvps", label: "RSVPs", icon: Mail, roles: ["OWNER", "CO_ORGANIZER", "PLANNER", "STAFF", "RECEPTIONIST"] },
+  { href: "/dashboard/gallery", label: "Gallery", icon: GalleryVerticalEnd, roles: ["OWNER", "CO_ORGANIZER", "PHOTOGRAPHER"] },
+  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3, roles: ["OWNER", "CO_ORGANIZER", "PLANNER"] },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings2, roles: ["OWNER"] },
 ];
 
-export function AppSidebar({ collapsed, onToggle, mobile = false }: { collapsed: boolean; onToggle: () => void; mobile?: boolean }) {
+const platformNav: NavItem[] = [
+  { href: "/platform", label: "Platform Dashboard", icon: Home },
+  { href: "/platform/users", label: "Users Mgmt", icon: UsersRound },
+  { href: "/platform/weddings", label: "Weddings Mgmt", icon: CalendarHeart },
+  { href: "/platform/subscriptions", label: "Subscriptions", icon: Building2 },
+  { href: "/platform/security", label: "Security", icon: ShieldCheck },
+];
+
+export function AppSidebar({ collapsed, onToggle, mobile = false, userRole, weddingRole }: {
+  collapsed: boolean;
+  onToggle: () => void;
+  mobile?: boolean;
+  userRole?: UserRole;
+  weddingRole?: WeddingRole | null;
+}) {
   const pathname = usePathname();
+  const nav = userRole === "SUPER_ADMIN" ? platformNav : weddingNav.filter((item) => !item.roles || item.roles.includes(weddingRole as WeddingRole));
 
   return (
     <aside className={cn("flex h-full flex-col", collapsed && !mobile ? "w-20" : "w-72")}>
       <div className="flex items-center justify-between gap-3 border-b border-border p-4">
         {!collapsed || mobile ? (
-          <Link href="/dashboard" className="min-w-0">
-            <p className="font-display text-xl font-black text-foreground">Cherilyn & Lester</p>
-            <p className="text-xs text-muted-foreground">Wedding SaaS</p>
+          <Link href={userRole === "SUPER_ADMIN" ? "/platform" : "/dashboard"} className="min-w-0">
+            <p className="font-display text-xl font-black text-foreground">{userRole === "SUPER_ADMIN" ? "WeddingFlow" : "Cherilyn & Lester"}</p>
+            <p className="text-xs text-muted-foreground">{userRole === "SUPER_ADMIN" ? "Platform Console" : "Wedding SaaS"}</p>
           </Link>
         ) : (
-          <CalendarHeart className="h-7 w-7 text-accent" />
+          userRole === "SUPER_ADMIN" ? <ShieldCheck className="h-7 w-7 text-accent" /> : <CalendarHeart className="h-7 w-7 text-accent" />
         )}
         {!mobile && (
           <Button variant="ghost" size="icon" onClick={onToggle} aria-label="Toggle sidebar">
@@ -41,7 +64,7 @@ export function AppSidebar({ collapsed, onToggle, mobile = false }: { collapsed:
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
         {nav.map((item) => {
           const Icon = item.icon;
-          const active = pathname === item.href;
+          const active = pathname === item.href || (item.href !== "/dashboard" && item.href !== "/platform" && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}
@@ -62,8 +85,8 @@ export function AppSidebar({ collapsed, onToggle, mobile = false }: { collapsed:
         <div className={cn("rounded-[1.25rem] bg-secondary p-4", collapsed && !mobile && "p-3 text-center")}>
           {(!collapsed || mobile) && (
             <>
-              <p className="font-display text-sm font-black">Radiant Citrus</p>
-              <p className="mt-1 text-xs text-muted-foreground">Gold-orange wedding experience</p>
+              <p className="font-display text-sm font-black">{userRole === "SUPER_ADMIN" ? "Platform access" : "Radiant Citrus"}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{userRole === "SUPER_ADMIN" ? "Manage tenants, users, and plans." : "Gold-orange wedding experience"}</p>
             </>
           )}
         </div>

@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { parseGuestFile } from "@/features/guests/csv";
 import type { ImportGuestRow } from "@/features/guests/schemas";
 
-export function CsvImportDialog({ weddingId, onImported }: { weddingId: string; onImported: () => void }) {
+export function CsvImportDialog({ weddingId, onImported = () => {} }: { weddingId: string; onImported?: () => void }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [file, setFile] = React.useState<File | null>(null);

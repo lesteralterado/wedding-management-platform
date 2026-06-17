@@ -11,7 +11,7 @@ import { regenerateInviteCode } from "@/features/guests/actions";
 import type { GuestWithRsvp } from "@/features/guests/types";
 import { EditGuestDialog } from "./edit-guest-dialog";
 
-export function GuestTable({ guests, groups }: { guests: GuestWithRsvp[]; groups: Array<{ name: string; count: number }> }) {
+export function GuestTable({ guests, groups, readOnly = false }: { guests: GuestWithRsvp[]; groups: Array<{ name: string; count: number }>; readOnly?: boolean }) {
   const [search, setSearch] = React.useState("");
   const [group, setGroup] = React.useState("all");
   const [refreshKey, setRefreshKey] = React.useState(0);
@@ -77,11 +77,15 @@ export function GuestTable({ guests, groups }: { guests: GuestWithRsvp[]; groups
               <TableCell><Status status={guest.rsvp?.status ?? "PENDING"} /></TableCell>
               <TableCell className="font-mono text-xs">{guest.inviteCode}</TableCell>
               <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <EditGuestDialog guest={guest} onUpdated={() => setRefreshKey((value) => value + 1)} />
-                  <Button variant="outline" size="sm" onClick={() => regenerate(guest.id)}>Regenerate</Button>
-                  <Button variant="destructive" size="sm" onClick={() => remove(guest.id)}>Delete</Button>
-                </div>
+                {readOnly ? (
+                  <span className="text-xs text-muted-foreground">Read-only</span>
+                ) : (
+                  <div className="flex justify-end gap-2">
+                    <EditGuestDialog guest={guest} onUpdated={() => setRefreshKey((value) => value + 1)} />
+                    <Button variant="outline" size="sm" onClick={() => regenerate(guest.id)}>Regenerate</Button>
+                    <Button variant="destructive" size="sm" onClick={() => remove(guest.id)}>Delete</Button>
+                  </div>
+                )}
               </TableCell>
             </TableRow>
           ))}

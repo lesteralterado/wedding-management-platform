@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { generateGuestQr, sendSingleInvite, sendBulkInvitesAction } from "@/features/invitations/actions";
 import type { GuestWithRsvp } from "@/features/guests/types";
 
-export function InvitationList({ guests, weddingId }: { guests: GuestWithRsvp[]; weddingId: string }) {
+export function InvitationList({ guests, weddingId, readOnly = false }: { guests: GuestWithRsvp[]; weddingId: string; readOnly?: boolean }) {
   const [selected, setSelected] = React.useState<string | null>(null);
   const [sending, setSending] = React.useState<string | null>(null);
   const [bulkSending, setBulkSending] = React.useState(false);
@@ -56,12 +56,14 @@ export function InvitationList({ guests, weddingId }: { guests: GuestWithRsvp[];
 
   return (
     <>
-      <div className="mb-4 flex justify-end">
-        <Button onClick={sendAll} disabled={bulkSending || guests.length === 0}>
-          <Send className="mr-2 h-4 w-4" />
-          {bulkSending ? "Sending..." : "Send All Invitations"}
-        </Button>
-      </div>
+      {!readOnly && (
+        <div className="mb-4 flex justify-end">
+          <Button onClick={sendAll} disabled={bulkSending || guests.length === 0}>
+            <Send className="mr-2 h-4 w-4" />
+            {bulkSending ? "Sending..." : "Send All Invitations"}
+          </Button>
+        </div>
+      )}
       <Table>
         <TableHeader>
           <TableRow>
@@ -85,12 +87,16 @@ export function InvitationList({ guests, weddingId }: { guests: GuestWithRsvp[];
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" size="sm" onClick={() => copyInvite(guest)}><Copy className="mr-2 h-4 w-4" />Copy</Button>
-                  <Button size="sm" onClick={() => generate(guest.id)}>Generate QR</Button>
-                  {guest.email && (
-                    <Button variant="secondary" size="sm" onClick={() => sendEmail(guest.id)} disabled={sending === guest.id}>
-                      <Mail className="mr-2 h-4 w-4" />
-                      {sending === guest.id ? "Sending..." : "Email"}
-                    </Button>
+                  {!readOnly && (
+                    <>
+                      <Button size="sm" onClick={() => generate(guest.id)}>Generate QR</Button>
+                      {guest.email && (
+                        <Button variant="secondary" size="sm" onClick={() => sendEmail(guest.id)} disabled={sending === guest.id}>
+                          <Mail className="mr-2 h-4 w-4" />
+                          {sending === guest.id ? "Sending..." : "Email"}
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
               </TableCell>

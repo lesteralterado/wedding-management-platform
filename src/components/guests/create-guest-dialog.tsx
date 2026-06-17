@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { GuestForm } from "./guest-form";
 
-export function CreateGuestDialog({ weddingId, onCreated }: { weddingId: string; onCreated: () => void }) {
+export function CreateGuestDialog({ weddingId, onCreated = () => {} }: { weddingId: string; onCreated?: () => void }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
 

@@ -1,9 +1,9 @@
 import * as React from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { requireCoupleAdmin } from "@/lib/auth/rbac";
+import { getDashboardAccessOrRedirect } from "@/lib/wedding/current";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  await requireCoupleAdmin();
+  const access = await getDashboardAccessOrRedirect();
 
-  return <DashboardShell>{children}</DashboardShell>;
+  return <DashboardShell userRole={access.user.role} weddingRole={access.weddingRole}>{children}</DashboardShell>;
 }

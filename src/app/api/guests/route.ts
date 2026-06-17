@@ -1,36 +1,33 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { requireCoupleAdmin } from "@/lib/auth/rbac";
+import { requireCustomer } from "@/lib/auth/rbac";
+import { getDashboardAccessOrRedirect, requireWeddingAccess } from "@/lib/wedding/current";
 
 export async function GET(request: Request) {
-  const user = await requireCoupleAdmin();
   const { searchParams } = new URL(request.url);
   const weddingId = searchParams.get("weddingId");
 
   if (!weddingId) {
-    const weddings = await prisma.wedding.findMany({ where: { userId: user.id }, include: { guests: { include: { rsvp: true } } } });
+    const access = await getDashboardAccessOrRedirect();
+    const weddings = await prisma.wedding.findMany({
+      where: { OR: [{ userId: access.user.id }, { staffRecords: { some: { userId: access.user.id } } }] },
+      include: { guests: { include: { rsvp: true } } },
+      orderBy: { createdAt: "desc" },
+    });
     return NextResponse.json({ weddings });
   }
 
-  const wedding = await prisma.wedding.findFirst({
-    where: { id: weddingId, userId: user.id },
-    include: { guests: { include: { rsvp: true } } },
-  });
-
-  if (!wedding) return NextResponse.json({ error: "Wedding not found." }, { status: 404 });
-  return NextResponse.json({ wedding });
+  const access = await requireWeddingAccess(weddingId, "guests:read");
+  return NextResponse.json({ wedding: access.wedding });
 }
 
 export async function POST(request: Request) {
-  const user = await requireCoupleAdmin();
   const body = await request.json();
-
-  const wedding = await prisma.wedding.findFirst({ where: { id: body.weddingId, userId: user.id } });
-  if (!wedding) return NextResponse.json({ error: "Wedding not found." }, { status: 404 });
+  const access = await requireWeddingAccess(body.weddingId, "guests:write");
 
   const guest = await prisma.guest.create({
     data: {
-      weddingId: wedding.id,
+      weddingId: access.wedding!.id,
       fullName: body.fullName,
       email: body.email || null,
       phone: body.phone || null,

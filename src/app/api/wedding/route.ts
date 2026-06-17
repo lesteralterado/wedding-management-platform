@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { requireCoupleAdmin } from "@/lib/auth/rbac";
+import { requireCustomer } from "@/lib/auth/rbac";
+import { requireWeddingAccess } from "@/lib/wedding/current";
 import { createWedding, updateWedding } from "@/features/wedding/actions";
 
 export async function POST(request: Request) {
-  const user = await requireCoupleAdmin();
+  const user = await requireCustomer();
   const body = await request.json();
 
   const result = await createWedding({ ...body, userId: user.id });
@@ -14,10 +15,10 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const user = await requireCoupleAdmin();
   const body = await request.json();
+  const access = await requireWeddingAccess(body.id, "wedding:write");
 
-  const result = await updateWedding(body.id, user.id, body);
+  const result = await updateWedding(body.id, access.user.id, body);
   if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
 
   return NextResponse.json({ success: true });

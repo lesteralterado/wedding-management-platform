@@ -45,6 +45,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -52,8 +53,10 @@
     "@types/sendgrid": "^2.0.31",
     "eslint": "^9",
     "eslint-config-next": "^15.5.19",
+    "globals": "^17.6.0",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-eslint": "^8.61.1"
   }
 }
