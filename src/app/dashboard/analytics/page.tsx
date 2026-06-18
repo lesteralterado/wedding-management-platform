@@ -11,6 +11,7 @@ export default async function AnalyticsPage() {
 
   const analytics = await getAnalytics(wedding.id);
   const groups = Object.entries(analytics.byGroup);
+  const rsvpRate = analytics.total ? Math.round(((analytics.confirmed + analytics.declined) / analytics.total) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -19,7 +20,7 @@ export default async function AnalyticsPage() {
         <h1 className="mt-2 font-display text-4xl font-black">RSVP health</h1>
         <p className="mt-2 text-muted-foreground">Real-time overview of guest response progress.</p>
       </section>
-      <AnalyticsOverview total={analytics.total} confirmed={analytics.confirmed} pending={analytics.pending} declined={analytics.declined} rsvpRate={analytics.rsvpRate} />
+      <AnalyticsOverview total={analytics.total} confirmed={analytics.confirmed} pending={analytics.pending} declined={analytics.declined} rsvpRate={rsvpRate} />
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle>Group breakdown</CardTitle><CardDescription>Guests organized by invitation group.</CardDescription></CardHeader>

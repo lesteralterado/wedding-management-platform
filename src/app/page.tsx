@@ -40,7 +40,7 @@ export default function Home() {
             </div>
           </Reveal>
           <Reveal delay={0.12}>
-            <div className="rounded-[2rem] border border-border bg-card p-4 shadow-warm">
+            <div className="rounded-4xl border border-border bg-card p-4 shadow-warm">
               <div className="rounded-[1.6rem] bg-[radial-gradient(circle_at_top_left,#fff7df,transparent_18rem),linear-gradient(135deg,#f5b041,#e67e22)] p-6 text-white">
                 <div className="flex items-center justify-between">
                   <CalendarHeart className="h-10 w-10" />
@@ -75,7 +75,7 @@ export default function Home() {
       </section>
 
       <section className="px-6 py-24 md:px-10 lg:px-16">
-        <div className="mx-auto max-w-7xl rounded-[2rem] border border-border bg-card p-6 shadow-warm md:p-10">
+        <div className="mx-auto max-w-7xl rounded-4xl border border-border bg-card p-6 shadow-warm md:p-10">
           <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <Reveal>
               <div>
@@ -102,7 +102,7 @@ export default function Home() {
 
 function FeatureCard({ icon: Icon, title, text }: { icon: React.ElementType; title: string; text: string }) {
   return (
-    <div className="rounded-[1.5rem] border border-border bg-card p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-warm">
+    <div className="rounded-3xl border border-border bg-card p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-warm">
       <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/20 text-accent">
         <Icon className="h-6 w-6" />
       </div>
@@ -123,8 +123,8 @@ function Metric({ value, label }: { value: string; label: string }) {
 
 function PreviewCard({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-[1.5rem] bg-secondary p-6">
-      <div className="h-28 rounded-[1.25rem] bg-gradient-to-br from-primary via-orange-200 to-white/70" />
+    <div className="rounded-3xl bg-secondary p-6">
+      <div className="h-28 rounded-[1.25rem] bg-linear-to-br from-primary via-orange-200 to-white/70" />
       <h3 className="mt-5 font-display text-2xl font-black">{title}</h3>
       <p className="mt-2 text-sm text-muted-foreground">{text}</p>
     </div>

@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import "server-only";
 import { prisma } from "@/lib/db/prisma";
-import { getMockPermissions, getMockWedding } from "@/lib/demo/demo-data";
+import { getMockPermissions, getMockWedding, getMockWeddingStaffRole } from "@/lib/demo/demo-data";
 import { getPermissions, getWeddingStaffRole, hasPermission, requireCustomer } from "@/lib/auth/rbac";
-import { isDemoMode } from "@/lib/auth/demo";
+import { isDemoMode, getDemoRole } from "@/lib/auth/demo";
 import type { AuthUser, Permission, WeddingRole } from "@/types/domain";
 import type { Guest, Rsvp, Wedding } from "@prisma/client";
 
@@ -18,11 +18,12 @@ export type DashboardAccess = {
 
 export async function getDashboardAccessOrRedirect(): Promise<DashboardAccess> {
   if (await isDemoMode()) {
+    const demoRole = (await getDemoRole()) as WeddingRole | null;
     return {
       user: requireCustomerFromDemo(),
       wedding: getMockWedding(),
-      weddingRole: "OWNER",
-      permissions: getMockPermissions("OWNER"),
+      weddingRole: demoRole,
+      permissions: getMockPermissions(demoRole),
     };
   }
 

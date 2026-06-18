@@ -1,5 +1,5 @@
 import type { AuthUser, Permission, WeddingRole } from "@/types/domain";
-import type { Guest, Rsvp, Wedding, WeddingStaff } from "@prisma/client";
+import type { Guest, Rsvp, Wedding } from "@prisma/client";
 
 const WEDDING_DATE = new Date("2027-06-12T16:00:00.000Z");
 const CREATED_AT = new Date("2027-01-10T10:00:00.000Z");
@@ -79,24 +79,18 @@ const mockWedding: Wedding & { guests: (Guest & { rsvp: Rsvp | null })[] } = {
   guests: mockGuests,
 } as Wedding & { guests: (Guest & { rsvp: Rsvp | null })[] };
 
-const mockWeddingStaff: WeddingStaff[] = [
-  {
-    id: "mock-staff-001",
-    weddingId: "mock-wedding-001",
-    userId: "mock-user-001",
-    role: "OWNER",
-    permissions: {},
-    createdAt: CREATED_AT,
-    updatedAt: UPDATED_AT,
-  },
-];
+function getMockWeddingStaff() {
+  return [
+    { id: "mock-staff-001", weddingId: "mock-wedding-001", userId: "mock-user-001", role: "OWNER" as WeddingRole, permissions: {}, createdAt: CREATED_AT, updatedAt: UPDATED_AT },
+  ];
+}
 
 export function getMockWedding(): Wedding & { guests: (Guest & { rsvp: Rsvp | null })[] } {
   return mockWedding;
 }
 
-export function getMockWeddingStaffRole(userId: string, weddingId: string): WeddingRole | null {
-  return mockWeddingStaff.find((staff) => staff.userId === userId && staff.weddingId === weddingId)?.role ?? null;
+export function getMockWeddingStaffRole(_userId: string, _weddingId: string): WeddingRole | null {
+  return getMockWeddingStaff()[0]?.role ?? null;
 }
 
 export function getMockPermissions(weddingRole: WeddingRole | null): Permission[] {
@@ -110,7 +104,7 @@ export function getMockPermissions(weddingRole: WeddingRole | null): Permission[
     case "RECEPTIONIST":
       return ["dashboard:read", "guests:read", "rsvps:read", "checkin:read"];
     case "PHOTOGRAPHER":
-      return ["gallery:read"];
+      return ["dashboard:read", "gallery:read"];
     default:
       return [];
   }
@@ -125,25 +119,30 @@ export function getMockGuestGroups(): Array<{ name: string; count: number }> {
     const group = guest.groupName ?? "Ungrouped";
     acc[group] = (acc[group] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {});
   return Object.entries(groups).map(([name, count]) => ({ name, count }));
 }
 
-export function getMockDashboardMetrics() {
+export function getMockDashboardMetrics(role: WeddingRole | string = "OWNER") {
   const total = mockGuests.length;
-  const confirmed = mockGuests.filter((guest) => guest.rsvp?.status === "GOING").length;
-  const pending = mockGuests.filter((guest) => !guest.rsvp || guest.rsvp.status === "PENDING").length;
-  const declined = mockGuests.filter((guest) => guest.rsvp?.status === "DECLINED").length;
+  const confirmed = mockGuests.filter((g) => g.rsvp?.status === "GOING").length;
+  const pending = mockGuests.filter((g) => !g.rsvp || g.rsvp.status === "PENDING").length;
+  const declined = mockGuests.filter((g) => g.rsvp?.status === "DECLINED").length;
   const responded = confirmed + declined;
+  const rsvpRate = total ? Math.round(((confirmed + declined) / total) * 100) : 0;
+  const base = { total, confirmed, pending, declined, responded, rsvpRate };
 
-  return {
-    total,
-    confirmed,
-    pending,
-    declined,
-    responded,
-    rsvpRate: total ? Math.round((responded / total) * 100) : 0,
-  };
+  switch (role) {
+    case "PLANNER":
+      return { ...base, tasksCompleted: 18, tasksPending: 7, vendorsConfirmed: 12, timelineProgress: 78 };
+    case "STAFF":
+    case "RECEPTIONIST":
+      return { ...base, checkedIn: 87, pendingCheckIn: 41, tablesReady: 12, lastScan: "2 min ago" };
+    case "PHOTOGRAPHER":
+      return { ...base, totalPhotos: 342, totalVideos: 28, storageUsed: "4.2 GB", uploadsToday: 24 };
+    default:
+      return { ...base, invitationsSent: 12, galleryCount: 6, budgetUsed: 65 };
+  }
 }
 
 export function getMockRsvps() {
@@ -166,14 +165,11 @@ export function getMockAnalytics() {
   const confirmed = mockGuests.filter((guest) => guest.rsvp?.status === "GOING").length;
   const pending = mockGuests.filter((guest) => !guest.rsvp || guest.rsvp.status === "PENDING").length;
   const declined = mockGuests.filter((guest) => guest.rsvp?.status === "DECLINED").length;
-  const rsvpRate = total ? Math.round(((confirmed + declined) / total) * 100) : 0;
-
   const byGroup = mockGuests.reduce<Record<string, number>>((acc, guest) => {
     const group = guest.groupName ?? "Ungrouped";
     acc[group] = (acc[group] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
-
+  }, {});
   const recentRsvps = mockGuests
     .filter((guest) => guest.rsvp?.submittedAt)
     .sort((a, b) => (b.rsvp!.submittedAt!.getTime() - a.rsvp!.submittedAt!.getTime()))
@@ -185,35 +181,94 @@ export function getMockAnalytics() {
       status: guest.rsvp!.status,
       submittedAt: guest.rsvp!.submittedAt!,
     }));
-
-  return { total, confirmed, pending, declined, rsvpRate, byGroup, recentRsvps };
+  return { total, confirmed, pending, declined, byGroup, recentRsvps };
 }
 
 export function getMockInvitations(): (Guest & { rsvp: Rsvp | null })[] {
   return mockGuests;
 }
 
-const mockUsers: Record<UserRole, AuthUser> = {
-  SUPER_ADMIN: {
-    id: "mock-super-admin-001",
-    name: "Platform Administrator",
-    email: "superadmin@example.com",
-    role: "SUPER_ADMIN",
-  },
-  CUSTOMER: {
-    id: "mock-user-001",
-    name: "Cherilyn & Lester Admin",
-    email: "admin@example.com",
-    role: "CUSTOMER",
-  },
-  STAFF: {
-    id: "mock-staff-user-001",
-    name: "Wedding Staff",
-    email: "staff@example.com",
-    role: "STAFF",
-  },
+export function getMockRecentRsvps() {
+  return mockGuests
+    .filter((g) => g.rsvp?.submittedAt)
+    .sort((a, b) => (b.rsvp!.submittedAt!.getTime() - a.rsvp!.submittedAt!.getTime()))
+    .slice(0, 5)
+    .map((g, i) => ({
+      id: `mock-recent-${i}`,
+      name: g.fullName,
+      status: g.rsvp!.status,
+      count: g.rsvp!.guestCount,
+      time: g.rsvp!.submittedAt!,
+    }));
+}
+
+const mockUsers: Record<string, AuthUser> = {
+  SUPER_ADMIN: { id: "mock-super-admin-001", name: "Platform Administrator", email: "superadmin@example.com", role: "SUPER_ADMIN" },
+  CUSTOMER: { id: "mock-user-001", name: "Cherilyn & Lester Admin", email: "admin@example.com", role: "CUSTOMER" },
+  STAFF: { id: "mock-staff-user-001", name: "Wedding Staff", email: "staff@example.com", role: "STAFF" },
 };
 
-export function getMockUser(role: UserRole = "CUSTOMER"): AuthUser {
-  return mockUsers[role];
+export function getMockUser(role: string = "CUSTOMER"): AuthUser {
+  return mockUsers[role] || mockUsers.CUSTOMER;
+}
+
+export function getMockPlatformMetrics() {
+  return {
+    totalWeddings: 1247,
+    activeSubscriptions: 892,
+    monthlyRevenue: 89450,
+    totalUsers: 3412,
+    newSignupsThisWeek: 48,
+    churnRate: 2.1,
+    avgRevenuePerUser: 89,
+    supportTicketsOpen: 12,
+  };
+}
+
+export function getMockPlatformUsers() {
+  return [
+    { id: "u1", name: "Cherilyn Santos", email: "cherilyn@example.com", role: "CUSTOMER", weddings: 1, joined: "2026-12-01", status: "Active" },
+    { id: "u2", name: "Lester Santos", email: "lester@example.com", role: "CUSTOMER", weddings: 1, joined: "2026-12-01", status: "Active" },
+    { id: "u3", name: "Mia Planner", email: "mia@planner.com", role: "CUSTOMER", weddings: 3, joined: "2026-10-15", status: "Active" },
+    { id: "u4", name: "Eva Designer", email: "eva@designer.com", role: "CUSTOMER", weddings: 2, joined: "2026-11-20", status: "Active" },
+    { id: "u5", name: "Marco Studio", email: "marco@studio.com", role: "CUSTOMER", weddings: 5, joined: "2026-09-05", status: "Active" },
+    { id: "u6", name: "Luna Events", email: "luna@events.com", role: "CUSTOMER", weddings: 8, joined: "2026-08-12", status: "Active" },
+    { id: "u7", name: "Paolo Santos", email: "paolo@example.com", role: "CUSTOMER", weddings: 1, joined: "2026-12-01", status: "Active" },
+    { id: "u8", name: "Ivy Reyes", email: "ivy@example.com", role: "CUSTOMER", weddings: 2, joined: "2026-11-01", status: "Active" },
+  ];
+}
+
+export function getMockPlatformWeddings() {
+  return [
+    { id: "w1", couple: "Cherilyn & Lester", date: "2027-06-12", venue: "The Golden Orchard Estate", status: "CONFIRMED", guests: 128, plan: "Premium" },
+    { id: "w2", couple: "Sofia & Mateo", date: "2027-03-20", venue: "Sunset Garden Pavilion", status: "CONFIRMED", guests: 85, plan: "Standard" },
+    { id: "w3", couple: "Emma & James", date: "2027-09-10", venue: "Crystal Ballroom", status: "PLANNING", guests: 210, plan: "Premium" },
+    { id: "w4", couple: "Olivia & Noah", date: "2027-05-05", venue: "Beachside Resort", status: "ENGAGED", guests: 60, plan: "Basic" },
+    { id: "w5", couple: "Ava & Ethan", date: "2027-12-18", venue: "Winter Wonderland Hall", status: "PLANNING", guests: 150, plan: "Premium" },
+    { id: "w6", couple: "Isabella & Lucas", date: "2027-07-30", venue: "Rosewood Estate", status: "CONFIRMED", guests: 95, plan: "Standard" },
+    { id: "w7", couple: "Mia & Marco", date: "2028-01-22", venue: "Grand Hyatt Manila", status: "ENGAGED", guests: 300, plan: "Enterprise" },
+    { id: "w8", couple: "Luna & Dante", date: "2027-11-11", venue: "Hilltop Garden", status: "COMPLETED", guests: 180, plan: "Premium" },
+  ];
+}
+
+export function getMockSubscriptions() {
+  return [
+    { id: "s1", name: "Basic", price: 29, users: 120, revenue: 3480, features: ["1 Wedding", "50 Guests", "QR Invites", "Basic RSVP"] },
+    { id: "s2", name: "Standard", price: 79, users: 340, revenue: 26860, features: ["3 Weddings", "200 Guests", "QR + Email", "Check-in", "Basic Analytics"] },
+    { id: "s3", name: "Premium", price: 149, users: 280, revenue: 41720, features: ["10 Weddings", "500 Guests", "All Features", "Priority Support", "Custom Domain"] },
+    { id: "s4", name: "Enterprise", price: 299, users: 52, revenue: 15548, features: ["Unlimited", "Dedicated Support", "SLA", "Custom Branding"] },
+  ];
+}
+
+export function getMockSecurityEvents() {
+  return [
+    { id: "e1", type: "login", user: "superadmin@example.com", ip: "192.168.1.42", time: "2 min ago", status: "Success" },
+    { id: "e2", type: "login", user: "admin@example.com", ip: "10.0.0.15", time: "15 min ago", status: "Success" },
+    { id: "e3", type: "failed_attempt", user: "unknown@test.com", ip: "203.0.113.42", time: "32 min ago", status: "Blocked" },
+    { id: "e4", type: "password_reset", user: "user@example.com", ip: "10.0.0.22", time: "1 hour ago", status: "Completed" },
+    { id: "e5", type: "role_change", user: "superadmin@example.com", ip: "192.168.1.42", time: "3 hours ago", status: "Success" },
+    { id: "e6", type: "login", user: "planner@studio.com", ip: "172.16.0.8", time: "4 hours ago", status: "Success" },
+    { id: "e7", type: "failed_attempt", user: "hacker@mail.com", ip: "198.51.100.7", time: "5 hours ago", status: "Blocked" },
+    { id: "e8", type: "permission_change", user: "superadmin@example.com", ip: "192.168.1.42", time: "6 hours ago", status: "Success" },
+  ];
 }

@@ -35,7 +35,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             id: user.id,
             name: user.name,
             email: user.email,
-            role: user.role,
+            role: user.role as UserRole,
           };
         } catch (error) {
           console.error("Authentication failed:", error);
@@ -48,7 +48,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id ?? "";
-        token.role = user.role ?? "CUSTOMER";
+        token.role = (user.role ?? "CUSTOMER") as UserRole;
       }
       return token;
     },

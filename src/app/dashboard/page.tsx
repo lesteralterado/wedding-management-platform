@@ -8,6 +8,10 @@ import { WeddingStatusBadge } from "@/components/wedding/wedding-status-badge";
 import { getDashboardMetrics } from "@/features/dashboard/queries";
 import { hasPermission } from "@/lib/auth/rbac";
 import { getDashboardAccessOrRedirect } from "@/lib/wedding/current";
+import { PlannerDashboard } from "@/components/demo/planner-dashboard";
+import { StaffDashboard } from "@/components/demo/staff-dashboard";
+import { ReceptionistDashboard } from "@/components/demo/receptionist-dashboard";
+import { PhotographerDashboard } from "@/components/demo/photographer-dashboard";
 
 export default async function DashboardPage() {
   const access = await getDashboardAccessOrRedirect();
@@ -41,16 +45,21 @@ export default async function DashboardPage() {
 
       <AnalyticsOverview {...metrics} />
 
+      {access.weddingRole === "PLANNER" && <PlannerDashboard />}
+      {access.weddingRole === "STAFF" && <StaffDashboard />}
+      {access.weddingRole === "RECEPTIONIST" && <ReceptionistDashboard />}
+      {access.weddingRole === "PHOTOGRAPHER" && <PhotographerDashboard />}
+
       <section className="grid gap-4 lg:grid-cols-3">
-        {canManageGuests && <SetupCard icon={<UsersRound className="h-5 w-5" />} title="Guest list" text={`${metrics.total} guests ready for invite codes.`} href="/dashboard/guests" />}
-        {canManageInvitations && <SetupCard icon={<MailCheck className="h-5 w-5" />} title="Invitations" text="Generate QR codes and share personalized links." href="/dashboard/invitations" />}
-        {canManageWedding && <SetupCard icon={<CalendarDays className="h-5 w-5" />} title="Wedding details" text="Polish your public microsite and event details." href="/dashboard/wedding" />}
+        {canManageGuests && <DashboardCard icon={<UsersRound className="h-5 w-5" />} title="Guest list" text={`${metrics.total} guests ready for invite codes.`} href="/dashboard/guests" />}
+        {canManageInvitations && <DashboardCard icon={<MailCheck className="h-5 w-5" />} title="Invitations" text="Generate QR codes and share personalized links." href="/dashboard/invitations" />}
+        {canManageWedding && <DashboardCard icon={<CalendarDays className="h-5 w-5" />} title="Wedding details" text="Polish your public microsite and event details." href="/dashboard/wedding" />}
       </section>
     </div>
   );
 }
 
-function SetupCard({ icon, title, text, href }: { icon: React.ReactNode; title: string; text: string; href: string }) {
+function DashboardCard({ icon, title, text, href }: { icon: React.ReactNode; title: string; text: string; href: string }) {
   return (
     <Card>
       <CardHeader>

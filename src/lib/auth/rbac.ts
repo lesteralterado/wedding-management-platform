@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/features/auth/auth";
 import { prisma } from "@/lib/db/prisma";
 import { getMockPermissions, getMockUser, getMockWeddingStaffRole } from "@/lib/demo/demo-data";
-import { isDemoMode } from "./demo";
+import { isDemoMode, getDemoRole } from "./demo";
 import type { Permission, UserRole, WeddingRole } from "@/types/domain";
 
 export const ALL_PERMISSIONS: Permission[] = [
@@ -24,14 +24,23 @@ export const ALL_PERMISSIONS: Permission[] = [
 ];
 
 export async function requireUser() {
-  if (await isDemoMode()) return getMockUser();
+  if (await isDemoMode()) {
+    const demoRole = (await getDemoRole()) as UserRole | null;
+    return getMockUser(demoRole || "CUSTOMER");
+  }
   const session = await auth();
   if (!session?.user) redirect("/login");
   return session.user;
 }
 
 export async function requireCustomer() {
-  if (await isDemoMode()) return getMockUser("CUSTOMER");
+  const demoRole = (await isDemoMode()) ? (await getDemoRole()) : null;
+  if (demoRole === "SUPER_ADMIN") {
+    return requireSuperAdmin();
+  }
+  if (await isDemoMode()) {
+    return getMockUser("CUSTOMER");
+  }
   const user = await requireUser();
   if (user.role === "SUPER_ADMIN") redirect("/platform");
   if (user.role !== "CUSTOMER" && user.role !== "STAFF") redirect("/login");
@@ -39,14 +48,22 @@ export async function requireCustomer() {
 }
 
 export async function requireSuperAdmin() {
-  if (await isDemoMode()) return getMockUser("SUPER_ADMIN");
+  if (await isDemoMode()) {
+    const demoRole = await getDemoRole();
+    if (demoRole === "SUPER_ADMIN") {
+      return getMockUser("SUPER_ADMIN");
+    }
+  }
   const user = await requireUser();
   if (user.role !== "SUPER_ADMIN") redirect("/dashboard");
   return user;
 }
 
 export async function getWeddingStaffRole(userId: string, weddingId: string): Promise<WeddingRole | null> {
-  if (await isDemoMode()) return getMockWeddingStaffRole(userId, weddingId);
+  if (await isDemoMode()) {
+    const demoRole = (await getDemoRole()) as WeddingRole | null;
+    return demoRole || getMockWeddingStaffRole(userId, weddingId);
+  }
 
   const staff = await prisma.weddingStaff.findUnique({
     where: { userId_weddingId: { userId, weddingId } },
@@ -77,7 +94,6 @@ export function getPermissions(userRole: UserRole, weddingRole: WeddingRole | nu
 export function canAccessRole(userRole: UserRole, requiredRole: UserRole) {
   if (requiredRole === "SUPER_ADMIN") return userRole === "SUPER_ADMIN";
   if (requiredRole === "CUSTOMER") return userRole === "CUSTOMER" || userRole === "SUPER_ADMIN";
-  if (requiredRole === "STAFF") return userRole === "STAFF" || userRole === "CUSTOMER" || userRole === "SUPER_ADMIN";
   return userRole === requiredRole;
 }
 

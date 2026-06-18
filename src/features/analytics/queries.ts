@@ -17,7 +17,6 @@ export async function getAnalytics(weddingId: string) {
   const confirmed = guests.filter((guest) => guest.rsvp?.status === "GOING").length;
   const pending = guests.filter((guest) => !guest.rsvp || guest.rsvp.status === "PENDING").length;
   const declined = guests.filter((guest) => guest.rsvp?.status === "DECLINED").length;
-  const rsvpRate = total ? Math.round(((confirmed + declined) / total) * 100) : 0;
 
   const byGroup = guests.reduce<Record<string, number>>((acc, guest) => {
     const group = guest.groupName || "Ungrouped";
@@ -36,6 +35,8 @@ export async function getAnalytics(weddingId: string) {
       status: guest.rsvp?.status ?? "PENDING",
       submittedAt: guest.rsvp?.submittedAt,
     }));
+
+  const rsvpRate = total ? Math.round(((confirmed + declined) / total) * 100) : 0;
 
   return {
     total,

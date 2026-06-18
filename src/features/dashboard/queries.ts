@@ -2,11 +2,12 @@ import "server-only";
 import { prisma } from "@/lib/db/prisma";
 import { isDemoMode } from "@/lib/auth/demo";
 import { getMockDashboardMetrics, getMockWedding } from "@/lib/demo/demo-data";
+import type { WeddingRole } from "@/types/domain";
 
-export async function getDashboardMetrics(weddingId: string) {
+export async function getDashboardMetrics(weddingId: string, weddingRole?: WeddingRole | null) {
   if (await isDemoMode()) {
     const wedding = getMockWedding();
-    return getMockDashboardMetrics();
+    return getMockDashboardMetrics(weddingRole ?? "OWNER");
   }
 
   const guests = await prisma.guest.findMany({
