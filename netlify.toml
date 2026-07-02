@@ -1,0 +1,4 @@
+[build.environment]
+  # Supabase publishable browser values are intentionally public. Private
+  # server-side variables are not omitted, so real leaks still fail deploys.
+  SECRETS_SCAN_OMIT_KEYS = "NEXTAUTH_URL,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,NEXT_PUBLIC_SUPABASE_URL"

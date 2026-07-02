@@ -42,12 +42,12 @@ The app uses mock data by default. To enable demo mode, click the demo login but
 
 ### Docker
 
-1. Set environment variables in a `.env` file:
+1. Create a `.env` file with these variables and keep the actual values out of version control:
 
 ```env
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/wedding_platform?schema=public
-NEXTAUTH_URL=https://your-domain.com
-NEXTAUTH_SECRET=generate-a-strong-secret-here
+DATABASE_URL=
+NEXTAUTH_URL=
+NEXTAUTH_SECRET=
 NODE_ENV=production
 ```
 
@@ -64,15 +64,11 @@ docker compose -f docker-compose.prod.yml exec app npx prisma migrate deploy
 docker compose -f docker-compose.prod.yml exec app npm run db:seed
 ```
 
-### Vercel
+### Netlify
 
-Deploy using the Vercel Platform or the Vercel CLI:
+Deploy using Netlify and configure the same variables in Site settings > Build & deploy > Environment:
 
-```bash
-vercel
-```
-
-Make sure to set `NEXTAUTH_URL` and `NEXTAUTH_SECRET` in your Vercel environment variables.
+`DATABASE_URL`, `NEXTAUTH_URL`, and `NEXTAUTH_SECRET`.
 
 ## Security Notes
 
