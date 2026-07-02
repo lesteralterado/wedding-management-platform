@@ -17,14 +17,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+      if (process.env.NODE_ENV !== "development") {
+        throw new DatabaseUnavailableError();
+      }
+
         try {
           const email = typeof credentials?.email === "string" ? credentials.email : "";
           const password = typeof credentials?.password === "string" ? credentials.password : "";
 
           if (!email || !password) return null;
 
-          // Mock authentication - accept any email/password
-          // In production, this would validate against the database
           const mockUser = {
             id: "mock-user-001",
             name: "Cherilyn & Lester Admin",

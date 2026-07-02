@@ -47,7 +47,8 @@ export function CameraView() {
         stream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [cameraFacing, capturedImage, stream]);
+  }, [cameraFacing, capturedImage]);
+  
 
   const startCountdown = (seconds: number) => {
     if (isCapturing) return;

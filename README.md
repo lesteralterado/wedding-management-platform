@@ -1,6 +1,4 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-![Website Preview](./public/preview.png)
+This is a [Next.js](https://nextjs.org) project for wedding websites, invitations, guests, and RSVPs.
 
 ## Getting Started
 
@@ -39,6 +37,49 @@ npm run db:seed
 This seed resets the local database and creates demo guests, RSVPs, invitation links, and QR codes.
 
 The app uses mock data by default. To enable demo mode, click the demo login button on the login page or use any credentials.
+
+## Production Deployment
+
+### Docker
+
+1. Set environment variables in a `.env` file:
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/wedding_platform?schema=public
+NEXTAUTH_URL=https://your-domain.com
+NEXTAUTH_SECRET=generate-a-strong-secret-here
+NODE_ENV=production
+```
+
+2. Start PostgreSQL and the app:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+3. Run database migrations and seed:
+
+```bash
+docker compose -f docker-compose.prod.yml exec app npx prisma migrate deploy
+docker compose -f docker-compose.prod.yml exec app npm run db:seed
+```
+
+### Vercel
+
+Deploy using the Vercel Platform or the Vercel CLI:
+
+```bash
+vercel
+```
+
+Make sure to set `NEXTAUTH_URL` and `NEXTAUTH_SECRET` in your Vercel environment variables.
+
+## Security Notes
+
+- Demo/mock mode is automatically disabled in production.
+- Security headers are configured in `next.config.ts`.
+- Passwords are hashed with bcrypt before storage.
+- API routes validate input before processing.
 
 ## Routes
 
@@ -93,25 +134,10 @@ The app uses mock data by default. To enable demo mode, click the demo login but
 | `/api/demo` | POST | Demo login (sets demo cookie, redirects to dashboard) |
 | `/api/demo/role` | GET, POST | Get/set demo user role |
 | `/api/wedding` | POST, PUT | Create wedding (POST) / update wedding details (PUT) |
-| `/api/guests` | GET, POST | List all guests (GET, via `/api/guests?weddingId=...`) or create guest (POST) |
+| `/api/guests` | GET, POST | List all guests (GET) or create guest (POST) |
 | `/api/guests/[id]` | PUT, DELETE | Update or delete specific guest |
 | `/api/guests/import-preview` | POST | Preview CSV/Excel guest import file |
 | `/api/guests/import-commit` | POST | Commit guest import to database |
 | `/api/rsvp/[inviteCode]` | POST | Submit RSVP response |
 | `/api/qr/[guestId]` | GET | Generate QR code for guest invitation |
 | `/api/gallery` | POST | Upload gallery images |
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

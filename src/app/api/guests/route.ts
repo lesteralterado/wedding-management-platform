@@ -4,40 +4,61 @@ import { getMockWedding, getMockGuests } from "@/lib/demo/demo-data";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const weddingId = searchParams.get("weddingId");
+  const search = searchParams.get("search")?.trim() || "";
+  const group = searchParams.get("group")?.trim() || "all";
 
-  // Return wedding with guests for demo/mock mode
   const wedding = {
     ...getMockWedding(),
     guests: getMockGuests(),
   };
 
-  // If weddingId is provided, return the wedding (wedding is already mock)
-  if (weddingId) {
-    return NextResponse.json({ wedding });
-  }
+  const filteredGuests = wedding.guests.filter((guest) => {
+    const matchesSearch = guest.fullName.toLowerCase().includes(search.toLowerCase());
+    const matchesGroup = group === "all" || guest.groupName === group;
+    return matchesSearch && matchesGroup;
+  });
 
-  // Otherwise return all weddings array (for demo)
-  return NextResponse.json({ weddings: [wedding] });
+  const result = weddingId ? { wedding: { ...wedding, guests: filteredGuests } } : { weddings: [{ ...wedding, guests: filteredGuests }] };
+
+  return NextResponse.json(result);
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  try {
+    const body = await request.json();
 
-  // Generate mock guest response
-  const guest = {
-    id: `mock-${Math.random().toString(36).slice(2, 10)}`,
-    weddingId: body.weddingId || "mock-wedding-001",
-    fullName: body.fullName || "New Guest",
-    email: body.email || null,
-    phone: body.phone || null,
-    groupName: body.groupName || null,
-    seatsAllowed: body.seatsAllowed || 1,
-    inviteCode: body.inviteCode || `invite-${Math.random().toString(36).slice(2, 10)}`,
-    qrCode: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    rsvp: null,
-  };
+    const fullName = typeof body.fullName === "string" ? body.fullName.trim() : "";
+    const email = typeof body.email === "string" ? body.email.trim() : null;
+    const phone = typeof body.phone === "string" ? body.phone.trim() : null;
+    const groupName = typeof body.groupName === "string" ? body.groupName.trim() : null;
+    const seatsAllowed = typeof body.seatsAllowed === "number" ? Math.max(1, body.seatsAllowed) : 1;
+    const weddingId = typeof body.weddingId === "string" ? body.weddingId.trim() : "mock-wedding-001";
 
-  return NextResponse.json({ success: true, guest });
+    if (fullName.length < 2) {
+      return NextResponse.json({ error: "Full name must be at least 2 characters." }, { status: 400 });
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
+    }
+
+    const guest = {
+      id: `mock-${Math.random().toString(36).slice(2, 10)}`,
+      weddingId,
+      fullName,
+      email,
+      phone,
+      groupName,
+      seatsAllowed,
+      inviteCode: `invite-${Math.random().toString(36).slice(2, 10)}`,
+      qrCode: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      rsvp: null,
+    };
+
+    return NextResponse.json({ success: true, guest });
+  } catch {
+    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+  }
 }

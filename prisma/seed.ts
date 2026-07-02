@@ -1,4 +1,4 @@
-import { PrismaClient, RsvpStatus, WeddingStatus } from "@prisma/client";
+import { PrismaClient, Role, RsvpStatus, WeddingStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { generateQrSvg } from "../src/lib/qr/generate";
 
@@ -42,7 +42,7 @@ async function main() {
       name: "Cherilyn & Lester Admin",
       email: "admin@example.com",
       passwordHash,
-      role: "CUSTOMER" as any,
+      role: Role.CUSTOMER,
     },
   });
 

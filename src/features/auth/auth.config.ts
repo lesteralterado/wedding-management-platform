@@ -13,6 +13,8 @@ export const authConfig = {
       if (!protectedPaths.some((path) => pathname.startsWith(path))) return true;
       if (auth) return true;
 
+      if (process.env.NODE_ENV !== "development") return false;
+
       const demoCookie = request.cookies.get("demo");
       if (demoCookie?.value === "true") return true;
 
