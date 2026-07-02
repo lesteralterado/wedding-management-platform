@@ -13,7 +13,7 @@ export default async function GuestsPage() {
   if (!wedding) return <EmptyState />;
   if (!hasPermission(access.user.role, access.weddingRole, "guests:read")) redirect("/dashboard");
 
-  const [guests, groups] = await Promise.all([getGuests(wedding.id), getGuestGroups(wedding.id)]);
+  const [guests, groups] = await Promise.all([getGuests(), getGuestGroups()]);
   const canWrite = hasPermission(access.user.role, access.weddingRole, "guests:write");
 
   return (

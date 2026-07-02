@@ -1,8 +1,6 @@
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { compare } from "bcryptjs";
 import { authConfig } from "./auth.config";
-import { prisma } from "@/lib/db/prisma";
 import type { UserRole } from "@/types/domain";
 
 class DatabaseUnavailableError extends CredentialsSignin {
@@ -25,20 +23,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           if (!email || !password) return null;
 
-          const user = await prisma.user.findUnique({ where: { email } });
-          if (!user) return null;
-
-          const isPasswordValid = await compare(password, user.passwordHash);
-          if (!isPasswordValid) return null;
-
-          return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role as UserRole,
+          // Mock authentication - accept any email/password
+          // In production, this would validate against the database
+          const mockUser = {
+            id: "mock-user-001",
+            name: "Cherilyn & Lester Admin",
+            email: email,
+            role: "CUSTOMER" as UserRole,
           };
-        } catch (error) {
-          console.error("Authentication failed:", error);
+
+          return mockUser;
+        } catch {
           throw new DatabaseUnavailableError();
         }
       },

@@ -1,25 +1,39 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
-import { requireCustomer } from "@/lib/auth/rbac";
-import { requireWeddingAccess } from "@/lib/wedding/current";
-import { createWedding, updateWedding } from "@/features/wedding/actions";
+import { getMockWedding } from "@/lib/demo/demo-data";
 
 export async function POST(request: Request) {
-  const user = await requireCustomer();
   const body = await request.json();
 
-  const result = await createWedding({ ...body, userId: user.id });
-  if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
+  // Create mock wedding response
+  const wedding = {
+    id: `mock-wedding-${Math.random().toString(36).slice(2, 8)}`,
+    userId: "mock-user-001",
+    brideName: body.brideName || "Bride",
+    groomName: body.groomName || "Groom",
+    slug: body.slug || `couple-${Math.random().toString(36).slice(2, 8)}`,
+    date: body.date || "2027-06-12",
+    venue: body.venue || "Venue",
+    venueAddress: body.venueAddress || "",
+    theme: body.theme || "Theme",
+    coverImage: body.coverImage || "/images/cover.svg",
+    galleryImages: body.galleryImages || [],
+    status: body.status || "PLANNING",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
-  return NextResponse.json({ success: true, wedding: result.wedding });
+  return NextResponse.json({ success: true, wedding });
 }
 
 export async function PUT(request: Request) {
   const body = await request.json();
-  const access = await requireWeddingAccess(body.id, "wedding:write");
 
-  const result = await updateWedding(body.id, access.user.id, body);
-  if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
+  // Mock update - just return success
+  const updated = {
+    ...getMockWedding(),
+    ...body,
+    updatedAt: new Date(),
+  };
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, wedding: updated });
 }

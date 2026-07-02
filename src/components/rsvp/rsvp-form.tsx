@@ -23,7 +23,6 @@ export function RsvpForm({ inviteCode, seatsAllowed, existingStatus }: { inviteC
     register,
     handleSubmit,
     watch,
-    formState: { errors },
   } = useForm<RsvpFormValues>({
     defaultValues: {
       status: (existingStatus === "DECLINED" ? "DECLINED" : existingStatus === "GOING" ? "GOING" : "PENDING") as "GOING" | "PENDING" | "DECLINED",

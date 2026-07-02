@@ -36,9 +36,68 @@ npm run db:seed
 
 This seed resets the local database and creates demo guests, RSVPs, invitation links, and QR codes.
 
-If login shows `Invalid email or password`, make sure Postgres is running and the seed has been applied. The demo login will not work until the database is available and seeded.
+The app uses mock data by default. To enable demo mode, click the demo login button on the login page or use any credentials.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Routes
+
+### Public Routes
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/` | GET | Home page (marketing/landing) |
+| `/w/[slug]` | GET | Public wedding website by slug |
+
+### Authentication Routes
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/login` | GET, POST | Login page |
+| `/register` | GET, POST | Registration page |
+| `/api/auth/register` | POST | Create new user account |
+| `/api/auth/[...nextauth]` | GET, POST | NextAuth.js authentication handlers |
+
+### Dashboard Routes (Authenticated Users)
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/dashboard` | GET | Dashboard home |
+| `/dashboard/analytics` | GET | Analytics overview |
+| `/dashboard/guests` | GET | Guest management |
+| `/dashboard/rsvps` | GET | RSVP management |
+| `/dashboard/invitations` | GET | Invitations management |
+| `/dashboard/wedding` | GET | Wedding details |
+| `/dashboard/gallery` | GET | Gallery management |
+| `/dashboard/settings` | GET | Settings page |
+
+### Platform Routes (Super Admin)
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/security` | GET | Security settings |
+| `/weddings` | GET | All weddings list |
+| `/subscriptions` | GET | Subscriptions management |
+| `/users` | GET | Users management |
+
+### Public Wedding Access Routes
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/invite/[inviteCode]` | GET | Public invitation page by code |
+
+### API Routes
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/demo` | POST | Demo login (sets demo cookie, redirects to dashboard) |
+| `/api/demo/role` | GET, POST | Get/set demo user role |
+| `/api/wedding` | POST, PUT | Create wedding (POST) / update wedding details (PUT) |
+| `/api/guests` | GET, POST | List all guests (GET, via `/api/guests?weddingId=...`) or create guest (POST) |
+| `/api/guests/[id]` | PUT, DELETE | Update or delete specific guest |
+| `/api/guests/import-preview` | POST | Preview CSV/Excel guest import file |
+| `/api/guests/import-commit` | POST | Commit guest import to database |
+| `/api/rsvp/[inviteCode]` | POST | Submit RSVP response |
+| `/api/qr/[guestId]` | GET | Generate QR code for guest invitation |
+| `/api/gallery` | POST | Upload gallery images |
 
 ## Learn More
 

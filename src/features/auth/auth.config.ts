@@ -10,8 +10,13 @@ export const authConfig = {
       const protectedPaths = ["/dashboard"];
       const { pathname } = request.nextUrl;
 
-      if (protectedPaths.some((path) => pathname.startsWith(path)) && !auth) return false;
-      return true;
+      if (!protectedPaths.some((path) => pathname.startsWith(path))) return true;
+      if (auth) return true;
+
+      const demoCookie = request.cookies.get("demo");
+      if (demoCookie?.value === "true") return true;
+
+      return false;
     },
   },
   session: {

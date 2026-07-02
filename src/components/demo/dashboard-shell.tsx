@@ -2,9 +2,8 @@
 
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
-export function DashboardShell({ children, active }: { children: React.ReactNode; active?: string }) {
+export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="space-y-6">
       {children}
@@ -13,8 +12,8 @@ export function DashboardShell({ children, active }: { children: React.ReactNode
 }
 
 export function StaffCheckInCard() {
-  const [checkedIn, setCheckedIn] = React.useState(87);
-  const [pending, setPending] = React.useState(41);
+  const [checkedIn] = React.useState(87);
+  const [pending] = React.useState(41);
 
   return (
     <Card>
@@ -35,7 +34,7 @@ export function StaffCheckInCard() {
 }
 
 export function ReceptionistCard() {
-  const [assigned, setAssigned] = React.useState(12);
+  const [assigned] = React.useState(12);
 
   return (
     <Card>
@@ -91,5 +90,3 @@ function CheckedMetric({ label, value, variant }: { label: string; value: number
     </div>
   );
 }
-
-const Metric = CheckedMetric;

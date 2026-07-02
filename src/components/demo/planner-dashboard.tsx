@@ -3,10 +3,10 @@
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardList, TrendingUp, UsersRound } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 
 export function PlannerDashboard() {
-  const [tasks, setTasks] = React.useState([
+  const [tasks] = React.useState([
     { id: 1, task: "Vendor confirmation call — florist", time: "09:00 AM", status: "upcoming", assignee: "Planner" },
     { id: 2, task: "Finalize seating chart for 128 guests", time: "10:30 AM", status: "in-progress", assignee: "Planner" },
     { id: 3, task: "Mail check invitations to overseas guests", time: "01:00 PM", status: "pending", assignee: "Planner" },

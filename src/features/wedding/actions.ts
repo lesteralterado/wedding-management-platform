@@ -1,12 +1,14 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/lib/db/prisma";
-import { createSlug, uniqueSlug } from "@/lib/utils/slug";
 import { weddingSchema } from "./schemas";
+import { createSlug, uniqueSlug } from "@/lib/utils/slug";
 
 const weddingCreateSchema = weddingSchema.extend({
   userId: z.string(),
 });
+
+// Mock slug store
+const usedSlugs: string[] = ["cherilyn-lester"];
 
 export async function createWedding(input: {
   userId: string;
@@ -23,24 +25,25 @@ export async function createWedding(input: {
   const parsed = weddingCreateSchema.safeParse(input);
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors };
 
-  const used = await prisma.wedding.findMany({ where: { userId: parsed.data.userId }, select: { slug: true } });
-  const slug = uniqueSlug(createSlug(`${parsed.data.brideName}-${parsed.data.groomName}`), used.map((item) => item.slug));
+  const slug = uniqueSlug(createSlug(`${parsed.data.brideName}-${parsed.data.groomName}`), usedSlugs);
 
-  const wedding = await prisma.wedding.create({
-    data: {
-      userId: parsed.data.userId,
-      brideName: parsed.data.brideName,
-      groomName: parsed.data.groomName,
-      date: new Date(parsed.data.date),
-      venue: parsed.data.venue,
-      venueAddress: parsed.data.venueAddress,
-      theme: parsed.data.theme,
-      status: parsed.data.status,
-      coverImage: parsed.data.coverImage,
-      galleryImages: parsed.data.galleryImages ?? [],
-      slug,
-    },
-  });
+  // Mock successful creation - no actual DB write
+  const wedding = {
+    id: `mock-wedding-${Math.random().toString(36).slice(2, 8)}`,
+    userId: parsed.data.userId,
+    brideName: parsed.data.brideName,
+    groomName: parsed.data.groomName,
+    date: new Date(parsed.data.date),
+    venue: parsed.data.venue,
+    venueAddress: parsed.data.venueAddress,
+    theme: parsed.data.theme,
+    status: parsed.data.status,
+    coverImage: parsed.data.coverImage,
+    galleryImages: parsed.data.galleryImages ?? [],
+    slug,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
   revalidatePath("/dashboard");
   return { success: true, wedding };
@@ -60,21 +63,7 @@ export async function updateWedding(id: string, userId: string, input: {
   const parsed = weddingSchema.safeParse(input);
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors };
 
-  await prisma.wedding.updateMany({
-    where: { id, userId },
-    data: {
-      brideName: parsed.data.brideName,
-      groomName: parsed.data.groomName,
-      date: new Date(parsed.data.date),
-      venue: parsed.data.venue,
-      venueAddress: parsed.data.venueAddress,
-      theme: parsed.data.theme,
-      status: parsed.data.status,
-      coverImage: parsed.data.coverImage,
-      galleryImages: parsed.data.galleryImages ?? [],
-    },
-  });
-
+  // Mock successful update - no actual DB write
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/wedding`);
   return { success: true };

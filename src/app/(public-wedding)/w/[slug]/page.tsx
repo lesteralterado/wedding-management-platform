@@ -5,7 +5,6 @@ import { PublicGallery } from "@/components/public/gallery-section";
 import { StorySection } from "@/components/public/story-section";
 import { WeddingHero } from "@/components/public/wedding-hero";
 import { getWeddingBySlug } from "@/features/wedding/queries";
-import type { Wedding } from "@prisma/client";
 
 export default async function PublicWeddingPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/features/auth/auth";
-import { prisma } from "@/lib/db/prisma";
-import { getMockPermissions, getMockUser, getMockWeddingStaffRole } from "@/lib/demo/demo-data";
+import { getMockUser } from "@/lib/demo/demo-data";
 import { isDemoMode, getDemoRole } from "./demo";
 import type { Permission, UserRole, WeddingRole } from "@/types/domain";
 
@@ -34,10 +33,6 @@ export async function requireUser() {
 }
 
 export async function requireCustomer() {
-  const demoRole = (await isDemoMode()) ? (await getDemoRole()) : null;
-  if (demoRole === "SUPER_ADMIN") {
-    return requireSuperAdmin();
-  }
   if (await isDemoMode()) {
     return getMockUser("CUSTOMER");
   }
@@ -59,25 +54,9 @@ export async function requireSuperAdmin() {
   return user;
 }
 
-export async function getWeddingStaffRole(userId: string, weddingId: string): Promise<WeddingRole | null> {
-  if (await isDemoMode()) {
-    const demoRole = (await getDemoRole()) as WeddingRole | null;
-    return demoRole || getMockWeddingStaffRole(userId, weddingId);
-  }
-
-  const staff = await prisma.weddingStaff.findUnique({
-    where: { userId_weddingId: { userId, weddingId } },
-    select: { role: true },
-  });
-
-  if (staff) return staff.role;
-
-  const wedding = await prisma.wedding.findUnique({
-    where: { id: weddingId },
-    select: { userId: true },
-  });
-
-  return wedding?.userId === userId ? "OWNER" : null;
+export async function getWeddingStaffRole(): Promise<WeddingRole | null> {
+  // Always return mock role (OWNER for demo)
+  return "OWNER";
 }
 
 export function hasPermission(userRole: UserRole, weddingRole: WeddingRole | null, permission: Permission) {

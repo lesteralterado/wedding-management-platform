@@ -34,11 +34,6 @@ export function LoginForm() {
     const result = await signIn("credentials", { ...values, redirect: false });
     setPending(false);
 
-    if (result?.error === "database_unavailable") {
-      toast.error("Database unavailable. Start Postgres and run npm run db:seed.");
-      return;
-    }
-
     if (result?.error) {
       toast.error("Invalid email or password.");
       return;
