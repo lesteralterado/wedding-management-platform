@@ -1,3 +1,7 @@
+# Wedding Management Platform
+
+![Website Preview](./public/preview.png)
+
 This is a [Next.js](https://nextjs.org) project for wedding websites, invitations, guests, and RSVPs.
 
 ## Getting Started
