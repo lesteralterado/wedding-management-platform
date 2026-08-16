@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { CalendarHeart, MailCheck, QrCode, UsersRound } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 
@@ -18,7 +19,15 @@ export default function Home() {
         </div>
       </header>
       <main className="overflow-hidden">
-      <section className="relative isolate px-6 pt-20 pb-24 md:px-10 lg:px-16">
+      <section className="relative isolate overflow-hidden px-6 pt-20 pb-24 md:px-10 lg:px-16">
+        <Image
+          src="/images/hero-wedding-reception.png"
+          alt=""
+          fill
+          priority
+          className="-z-20 object-cover"
+        />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-background via-background/90 to-background/50" />
         <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2">
           <Reveal>
             <div className="space-y-7">
