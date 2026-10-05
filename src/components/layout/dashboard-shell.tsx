@@ -6,29 +6,14 @@ import { MobileNav } from "./mobile-nav";
 import { RoleSwitcher } from "@/components/demo/role-switcher";
 import type { UserRole, WeddingRole } from "@/types/domain";
 
-export function DashboardShell({ children, userRole, weddingRole }: {
+// The demo cookies are httpOnly, so demo state has to come from the server.
+export function DashboardShell({ children, userRole, weddingRole, isDemo = false }: {
   children: React.ReactNode;
   userRole?: UserRole;
   weddingRole?: WeddingRole | null;
+  isDemo?: boolean;
 }) {
   const [collapsed, setCollapsed] = React.useState(false);
-  const [isDemo, setIsDemo] = React.useState(false);
-  const [demoRole, setDemoRole] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    function readCookies() {
-      const cookies = document.cookie.split(";").reduce<Record<string, string>>((acc, raw) => {
-        const [k, ...rest] = raw.trim().split("=");
-        acc[k] = decodeURIComponent(rest.join("="));
-        return acc;
-      }, {});
-      const demo = cookies["demo"] === "true";
-      const role = cookies["demo-role"] || null;
-      setIsDemo(demo);
-      setDemoRole(role);
-    }
-    readCookies();
-  }, []);
 
   return (
     <div className="flex min-h-screen">
@@ -43,7 +28,7 @@ export function DashboardShell({ children, userRole, weddingRole }: {
           <div className="border-b border-border bg-secondary/60 px-4 py-2">
             <div className="mx-auto flex max-w-7xl items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground">Demo mode</span>
-              <RoleSwitcher currentRole={demoRole || weddingRole || userRole || "OWNER"} />
+              <RoleSwitcher currentRole={weddingRole || userRole || "OWNER"} />
             </div>
           </div>
         )}

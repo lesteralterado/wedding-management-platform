@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
-import { registerSchema } from "@/features/auth/schemas";
+import { registerUser } from "@/features/auth/actions";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const parsed = registerSchema.safeParse(body);
+    const result = await registerUser(body);
 
-    if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
+    if (result.error) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    // Mock successful registration - no actual DB write
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error("Registration failed:", error);
     return NextResponse.json({ error: "Unable to create account." }, { status: 500 });
   }
 }

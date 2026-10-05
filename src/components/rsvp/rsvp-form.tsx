@@ -34,7 +34,8 @@ export function RsvpForm({ inviteCode, seatsAllowed, existingStatus }: { inviteC
   const status = watch("status");
 
   async function onSubmit(values: RsvpFormValues) {
-    const guestCount = Number(values.guestCount);
+    // The count field is disabled when declining, so react-hook-form submits no value for it.
+    const guestCount = values.status === "DECLINED" ? 0 : Number(values.guestCount);
 
     if (values.status === "GOING" && guestCount < 1) {
       toast.error("Going guests must bring at least 1 person.");

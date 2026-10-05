@@ -1,20 +1,14 @@
 import "server-only";
+import { prisma } from "@/lib/db/prisma";
+import { isDatabaseUnavailable } from "@/lib/db/availability";
 import { getMockWedding } from "@/lib/demo/demo-data";
 
 export async function getWeddingBySlug(slug: string) {
-  // Only return mock wedding for known slug
-  if (slug === "cherilyn-lester") {
-    return getMockWedding();
+  try {
+    return await prisma.wedding.findUnique({ where: { slug } });
+  } catch (error) {
+    // Keeps the public demo site up on deployments without a database.
+    if (isDatabaseUnavailable(error) && slug === getMockWedding().slug) return getMockWedding();
+    throw error;
   }
-  return null;
-}
-
-export async function getWeddingById() {
-  // Return mock wedding
-  return getMockWedding();
-}
-
-export async function getWeddingsForUser() {
-  // Return mock weddings array
-  return [getMockWedding()];
 }

@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
-import { generateQrSvg } from "@/lib/qr/generate";
+import { prisma } from "@/lib/db/prisma";
 import { getMockGuests } from "@/lib/demo/demo-data";
+import { inviteUrl } from "@/features/invitations/links";
+import { generateQrSvg } from "@/lib/qr/generate";
+import { authorizeWedding } from "@/lib/wedding/current";
 
-const mockGuests = getMockGuests();
-
-export async function GET(request: Request, { params }: { params: Promise<{ guestId: string }> }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ guestId: string }> }) {
   const { guestId } = await params;
 
-  // Find mock guest
-  const guest = mockGuests.find((g) => g.id === guestId);
+  const auth = await authorizeWedding("invitations:read");
+  if (!auth.ok) return NextResponse.json({ error: auth.message }, { status: auth.status });
+
+  const guest = auth.access.isDemo
+    ? getMockGuests().find((g) => g.id === guestId)
+    : await prisma.guest.findFirst({ where: { id: guestId, weddingId: auth.access.wedding.id }, select: { inviteCode: true } });
   if (!guest) return NextResponse.json({ error: "Guest not found." }, { status: 404 });
 
-  const inviteUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/invite/${guest.inviteCode}`;
-  const qrCode = await generateQrSvg(inviteUrl);
-
+  const qrCode = await generateQrSvg(inviteUrl(guest.inviteCode));
   return NextResponse.json({ qrCode });
 }

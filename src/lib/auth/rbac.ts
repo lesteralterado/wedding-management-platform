@@ -1,26 +1,11 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/features/auth/auth";
+import { prisma } from "@/lib/db/prisma";
 import { getMockUser } from "@/lib/demo/demo-data";
 import { isDemoMode, getDemoRole } from "./demo";
-import type { Permission, UserRole, WeddingRole } from "@/types/domain";
+import type { AuthUser, UserRole, WeddingRole } from "@/types/domain";
 
-export const ALL_PERMISSIONS: Permission[] = [
-  "dashboard:read",
-  "wedding:read",
-  "wedding:write",
-  "guests:read",
-  "guests:write",
-  "invitations:read",
-  "invitations:write",
-  "rsvps:read",
-  "gallery:read",
-  "gallery:write",
-  "analytics:read",
-  "settings:write",
-  "checkin:read",
-  "platform:read",
-  "platform:write",
-];
+export { ALL_PERMISSIONS, canAccessRole, getPermissions, hasPermission } from "./permissions";
 
 export async function requireUser() {
   if (await isDemoMode()) {
@@ -30,6 +15,16 @@ export async function requireUser() {
   const session = await auth();
   if (!session?.user) redirect("/login");
   return session.user;
+}
+
+/** The signed-in couple or staff member, without redirecting. Null when signed out or a platform admin. */
+export async function getCustomer(): Promise<AuthUser | null> {
+  if (await isDemoMode()) return getMockUser("CUSTOMER");
+
+  const session = await auth();
+  const user = session?.user;
+  if (!user || (user.role !== "CUSTOMER" && user.role !== "STAFF")) return null;
+  return { id: user.id, role: user.role, name: user.name ?? "", email: user.email ?? "" };
 }
 
 export async function requireCustomer() {
@@ -54,55 +49,14 @@ export async function requireSuperAdmin() {
   return user;
 }
 
-export async function getWeddingStaffRole(): Promise<WeddingRole | null> {
-  // Always return mock role (OWNER for demo)
-  return "OWNER";
-}
+/** The creator of a wedding is its OWNER; everyone else needs a WeddingStaff record. */
+export async function getWeddingStaffRole(userId: string, wedding: { id: string; userId: string }): Promise<WeddingRole | null> {
+  if (wedding.userId === userId) return "OWNER";
 
-export function hasPermission(userRole: UserRole, weddingRole: WeddingRole | null, permission: Permission) {
-  if (userRole === "SUPER_ADMIN") return true;
+  const staff = await prisma.weddingStaff.findUnique({
+    where: { userId_weddingId: { userId, weddingId: wedding.id } },
+    select: { role: true },
+  });
 
-  const allowed = getPermissionSet(weddingRole);
-  return allowed.has(permission);
-}
-
-export function getPermissions(userRole: UserRole, weddingRole: WeddingRole | null): Permission[] {
-  return ALL_PERMISSIONS.filter((permission) => hasPermission(userRole, weddingRole, permission));
-}
-
-export function canAccessRole(userRole: UserRole, requiredRole: UserRole) {
-  if (requiredRole === "SUPER_ADMIN") return userRole === "SUPER_ADMIN";
-  if (requiredRole === "CUSTOMER") return userRole === "CUSTOMER" || userRole === "SUPER_ADMIN";
-  return userRole === requiredRole;
-}
-
-function getPermissionSet(weddingRole: WeddingRole | null): Set<Permission> {
-  switch (weddingRole) {
-    case "OWNER":
-    case "CO_ORGANIZER":
-      return new Set<Permission>([
-        "dashboard:read",
-        "wedding:read",
-        "wedding:write",
-        "guests:read",
-        "guests:write",
-        "invitations:read",
-        "invitations:write",
-        "rsvps:read",
-        "gallery:read",
-        "gallery:write",
-        "analytics:read",
-        "settings:write",
-        "checkin:read",
-      ]);
-    case "PLANNER":
-      return new Set<Permission>(["dashboard:read", "wedding:read", "guests:read", "guests:write", "rsvps:read", "analytics:read"]);
-    case "STAFF":
-    case "RECEPTIONIST":
-      return new Set<Permission>(["dashboard:read", "guests:read", "rsvps:read", "checkin:read"]);
-    case "PHOTOGRAPHER":
-      return new Set<Permission>(["gallery:read"]);
-    default:
-      return new Set<Permission>();
-  }
+  return staff?.role ?? null;
 }

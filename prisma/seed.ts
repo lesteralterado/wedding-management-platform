@@ -4,7 +4,6 @@ import { generateQrSvg } from "../src/lib/qr/generate";
 
 const prisma = new PrismaClient();
 const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
-const passwordHash = await bcrypt.hash("Password123!", 12);
 
 function inviteCodeFor(fullName: string) {
   const normalized = fullName
@@ -32,6 +31,8 @@ const demoGuests = [
 ] as const;
 
 async function main() {
+  const passwordHash = await bcrypt.hash("Password123!", 12);
+
   await prisma.rsvp.deleteMany();
   await prisma.guest.deleteMany();
   await prisma.wedding.deleteMany();

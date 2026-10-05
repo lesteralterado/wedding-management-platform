@@ -16,7 +16,7 @@ export default function GalleryPage() {
       const response = await fetch("/api/guests");
       if (!response.ok) return;
       const payload = await response.json();
-      setWeddingId(payload.weddings?.[0]?.id ?? null);
+      setWeddingId(payload.wedding?.id ?? null);
     }
     loadWedding();
   }, []);

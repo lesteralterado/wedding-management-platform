@@ -39,7 +39,7 @@ export function InvitationList({ guests, weddingId, readOnly = false }: { guests
   async function sendAll() {
     if (!weddingId) return;
     setBulkSending(true);
-    const result = await sendBulkInvitesAction(weddingId);
+    const result = await sendBulkInvitesAction();
     if (result.failed === 0) {
       toast.success(`Sent ${result.success} invitation emails.`);
     } else {

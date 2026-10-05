@@ -22,7 +22,7 @@ export default async function DashboardPage() {
     redirect(access.weddingRole === "PHOTOGRAPHER" ? "/dashboard/gallery" : "/dashboard");
   }
 
-  const metrics = await getDashboardMetrics(wedding.id);
+  const metrics = await getDashboardMetrics(wedding.id, access.weddingRole);
   const canManageGuests = hasPermission(access.user.role, access.weddingRole, "guests:write");
   const canManageWedding = hasPermission(access.user.role, access.weddingRole, "wedding:write");
   const canManageInvitations = hasPermission(access.user.role, access.weddingRole, "invitations:write");

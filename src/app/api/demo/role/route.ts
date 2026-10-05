@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isWeddingRole } from "@/lib/auth/permissions";
 
 export async function POST(request: Request) {
   try {
@@ -9,8 +10,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Role is required." }, { status: 400 });
     }
 
-    const allowed = ["CUSTOMER", "STAFF", "SUPER_ADMIN"];
-    if (!allowed.includes(role)) {
+    // The role switcher offers the wedding roles plus the platform admin.
+    if (!isWeddingRole(role) && role !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "Invalid role." }, { status: 400 });
     }
 

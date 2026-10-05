@@ -30,7 +30,7 @@ Use the seeded demo account to log in and view the dashboard data:
 | Password | `Password123!` |
 | Public wedding website | `/w/cherilyn-lester` |
 
-To create or refresh the local demo data, run:
+To create or refresh the local demo data, add `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/wedding_platform?schema=public` to `.env.local`, then run:
 
 ```bash
 docker compose up -d
@@ -40,7 +40,9 @@ npm run db:seed
 
 This seed resets the local database and creates demo guests, RSVPs, invitation links, and QR codes.
 
-The app uses mock data by default. To enable demo mode, click the demo login button on the login page or use any credentials.
+Signing in checks the email and password against the database. In development, **Try demo** on the login page opens a read-only dashboard backed by bundled sample data (no database needed); changes made there are not saved.
+
+Run the unit tests with `npm test`.
 
 ## Production Deployment
 

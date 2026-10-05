@@ -91,6 +91,8 @@ model Guest {
   phone        String?
   groupName    String?
   inviteCode   String   @unique
+  // Unguessable token for the guest's personal link and QR pass (two UUIDv4s ≈ 244 random bits).
+  accessToken  String   @unique @default(dbgenerated("replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', '')"))
   qrCode       String?
   seatsAllowed Int      @default(1)
   rsvp         Rsvp?

@@ -66,6 +66,7 @@ const mockGuests: (Guest & { rsvp: Rsvp | null })[] = guestSeeds.map((seed, inde
     phone: seed.phone,
     groupName: seed.groupName,
     inviteCode: seed.inviteCode,
+    accessToken: `demo-access-${seed.inviteCode}`,
     seatsAllowed: seed.seatsAllowed,
     qrCode: `<svg>mock-qr-${seed.inviteCode}</svg>`,
     createdAt: CREATED_AT,

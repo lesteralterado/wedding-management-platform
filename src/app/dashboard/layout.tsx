@@ -9,6 +9,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <DashboardShell
       userRole={access.user.role}
       weddingRole={access.weddingRole}
+      isDemo={access.isDemo}
     >
       {children}
     </DashboardShell>

@@ -1,6 +1,9 @@
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { compare } from "bcryptjs";
 import { authConfig } from "./auth.config";
+import { loginSchema } from "./schemas";
+import { prisma } from "@/lib/db/prisma";
 import type { UserRole } from "@/types/domain";
 
 class DatabaseUnavailableError extends CredentialsSignin {
@@ -17,31 +20,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-      if (process.env.NODE_ENV !== "development") {
-        throw new DatabaseUnavailableError();
-      }
+        const parsed = loginSchema.safeParse(credentials);
+        if (!parsed.success) return null;
 
+        let user;
         try {
-          const email = typeof credentials?.email === "string" ? credentials.email : "";
-          const password = typeof credentials?.password === "string" ? credentials.password : "";
-
-          if (!email || !password) return null;
-
-          const mockUser = {
-            id: "mock-user-001",
-            name: "Cherilyn & Lester Admin",
-            email: email,
-            role: "CUSTOMER" as UserRole,
-          };
-
-          return mockUser;
-        } catch {
+          user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+        } catch (error) {
+          console.error("Authentication failed:", error);
           throw new DatabaseUnavailableError();
         }
+
+        if (!user) return null;
+        if (!(await compare(parsed.data.password, user.passwordHash))) return null;
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role as UserRole,
+        };
       },
     }),
   ],
   callbacks: {
+    ...authConfig.callbacks,
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id ?? "";

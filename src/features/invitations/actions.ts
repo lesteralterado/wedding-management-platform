@@ -2,18 +2,31 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
+import { getMockGuests } from "@/lib/demo/demo-data";
 import { generateQrSvg } from "@/lib/qr/generate";
 import { sendInviteEmail, sendBulkInvites } from "@/lib/email/sendgrid";
+import { authorizeWedding } from "@/lib/wedding/current";
+import { inviteUrl } from "./links";
 
 export async function generateGuestQr(guestId: string) {
-  const guest = await prisma.guest.findUnique({ where: { id: guestId } });
+  const auth = await authorizeWedding("invitations:write");
+  if (!auth.ok) return { error: { guestId: [auth.message] } };
+
+  if (auth.access.isDemo) {
+    const guest = getMockGuests().find((g) => g.id === guestId);
+    if (!guest) return { error: { guestId: ["Guest not found."] } };
+    const url = inviteUrl(guest.inviteCode);
+    return { success: true, qrCode: await generateQrSvg(url), inviteUrl: url };
+  }
+
+  const guest = await prisma.guest.findFirst({ where: { id: guestId, weddingId: auth.access.wedding.id } });
   if (!guest) return { error: { guestId: ["Guest not found."] } };
 
-  const url = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/invite/${guest.inviteCode}`;
+  const url = inviteUrl(guest.inviteCode);
   const qrCode = await generateQrSvg(url);
 
   await prisma.guest.update({
-    where: { id: guestId },
+    where: { id: guest.id },
     data: { qrCode },
   });
 
@@ -22,25 +35,23 @@ export async function generateGuestQr(guestId: string) {
 }
 
 export async function sendSingleInvite(guestId: string) {
-  const guest = await prisma.guest.findUnique({
-    where: { id: guestId },
-    include: { wedding: true },
-  });
+  const auth = await authorizeWedding("invitations:write");
+  if (!auth.ok) return { success: false as const, error: auth.message };
+  if (auth.access.isDemo) return { success: false as const, error: "Emails aren't sent in demo mode." };
+
+  const { wedding } = auth.access;
+  const guest = await prisma.guest.findFirst({ where: { id: guestId, weddingId: wedding.id } });
 
   if (!guest) return { success: false as const, error: "Guest not found." };
   if (!guest.email) return { success: false as const, error: "Guest has no email address." };
-  if (!guest.wedding) return { success: false as const, error: "Wedding not found." };
-
-  const inviteUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/invite/${guest.inviteCode}`;
-  const coupleNames = `${guest.wedding.brideName} & ${guest.wedding.groomName}`;
 
   const result = await sendInviteEmail({
     to: guest.email,
     guestName: guest.fullName,
-    coupleNames,
-    weddingDate: guest.wedding.date ? guest.wedding.date.toLocaleDateString() : undefined,
-    weddingVenue: guest.wedding.venue || undefined,
-    inviteUrl,
+    coupleNames: `${wedding.brideName} & ${wedding.groomName}`,
+    weddingDate: wedding.date.toLocaleDateString(),
+    weddingVenue: wedding.venue || undefined,
+    inviteUrl: inviteUrl(guest.inviteCode),
   });
 
   if (result.success) {
@@ -50,23 +61,22 @@ export async function sendSingleInvite(guestId: string) {
   return { success: false as const, error: result.error };
 }
 
-export async function sendBulkInvitesAction(weddingId: string) {
-  const guests = await prisma.guest.findMany({
-    where: { weddingId },
-    include: { wedding: true },
-  });
+export async function sendBulkInvitesAction() {
+  const auth = await authorizeWedding("invitations:write");
+  if (!auth.ok || auth.access.isDemo) return { success: 0, failed: 0 };
 
-  const guestsWithEmail = guests.filter((g) => g.email && g.wedding);
-  const inviteInputs = guestsWithEmail.map((guest) => ({
+  const { wedding } = auth.access;
+  const guests = await prisma.guest.findMany({ where: { weddingId: wedding.id, email: { not: null } } });
+
+  const result = await sendBulkInvites(guests.map((guest) => ({
     to: guest.email!,
     guestName: guest.fullName,
-    coupleNames: `${guest.wedding!.brideName} & ${guest.wedding!.groomName}`,
-    weddingDate: guest.wedding!.date ? guest.wedding!.date.toLocaleDateString() : undefined,
-    weddingVenue: guest.wedding!.venue || undefined,
-    inviteUrl: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/invite/${guest.inviteCode}`,
-  }));
+    coupleNames: `${wedding.brideName} & ${wedding.groomName}`,
+    weddingDate: wedding.date.toLocaleDateString(),
+    weddingVenue: wedding.venue || undefined,
+    inviteUrl: inviteUrl(guest.inviteCode),
+  })));
 
-  const result = await sendBulkInvites(inviteInputs);
   revalidatePath("/dashboard/invitations");
   return result;
 }

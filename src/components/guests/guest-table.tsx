@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,7 @@ import { EditGuestDialog } from "./edit-guest-dialog";
 export function GuestTable({ guests, groups, readOnly = false }: { guests: GuestWithRsvp[]; groups: Array<{ name: string; count: number }>; readOnly?: boolean }) {
   const [search, setSearch] = React.useState("");
   const [group, setGroup] = React.useState("all");
-  const [refreshKey, setRefreshKey] = React.useState(0);
+  const router = useRouter();
 
   const filtered = guests.filter((guest) => {
     const matchesSearch = guest.fullName.toLowerCase().includes(search.toLowerCase());
@@ -25,11 +26,11 @@ export function GuestTable({ guests, groups, readOnly = false }: { guests: Guest
   async function regenerate(guestId: string) {
     const result = await regenerateInviteCode(guestId);
     if (!result.success) {
-      toast.error("Unable to regenerate invite.");
+      toast.error(result.error ?? "Unable to regenerate invite.");
       return;
     }
     toast.success("Invite code regenerated.");
-    setRefreshKey((value) => value + 1);
+    router.refresh();
   }
 
   async function remove(guestId: string) {
@@ -40,7 +41,7 @@ export function GuestTable({ guests, groups, readOnly = false }: { guests: Guest
       return;
     }
     toast.success("Guest deleted.");
-    setRefreshKey((value) => value + 1);
+    router.refresh();
   }
 
   return (
@@ -54,7 +55,7 @@ export function GuestTable({ guests, groups, readOnly = false }: { guests: Guest
           ))}
         </Select>
       </div>
-      <Table key={refreshKey}>
+      <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Guest</TableHead>
@@ -81,7 +82,7 @@ export function GuestTable({ guests, groups, readOnly = false }: { guests: Guest
                   <span className="text-xs text-muted-foreground">Read-only</span>
                 ) : (
                   <div className="flex justify-end gap-2">
-                    <EditGuestDialog guest={guest} onUpdated={() => setRefreshKey((value) => value + 1)} />
+                    <EditGuestDialog guest={guest} onUpdated={() => router.refresh()} />
                     <Button variant="outline" size="sm" onClick={() => regenerate(guest.id)}>Regenerate</Button>
                     <Button variant="destructive" size="sm" onClick={() => remove(guest.id)}>Delete</Button>
                   </div>
