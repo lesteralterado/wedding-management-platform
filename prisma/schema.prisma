@@ -58,13 +58,40 @@ model Wedding {
   date           DateTime
   venue          String
   venueAddress   String?
-  theme          String
+  // Ids from src/templates/catalog.ts; a missing palette falls back to the template's default.
+  templateId     String        @default("royal-arch")
+  paletteId      String?
   coverImage     String?
   galleryImages  Json          @default("[]")
   status         WeddingStatus @default(PLANNING)
   guests         Guest[]
+  sections       WeddingSection[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+}
+
+enum SectionType {
+  HERO
+  STORY
+  EVENTS
+  GALLERY
+  RSVP
+  FAQ
+}
+
+// One row per section a couple has customised; content is validated by src/templates/sections.ts.
+model WeddingSection {
+  id        String      @id @default(cuid())
+  weddingId String
+  wedding   Wedding     @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  type      SectionType
+  enabled   Boolean     @default(true)
+  position  Int
+  content   Json        @default("{}")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([weddingId, type])
 }
 
 model WeddingStaff {

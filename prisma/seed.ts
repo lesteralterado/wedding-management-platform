@@ -1,6 +1,7 @@
 import { PrismaClient, Role, RsvpStatus, WeddingStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { generateQrSvg } from "../src/lib/qr/generate";
+import { DEMO_COVER_IMAGE, DEMO_GALLERY_IMAGES, DEMO_SECTIONS } from "../src/lib/demo/demo-site";
 
 const prisma = new PrismaClient();
 const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
@@ -56,10 +57,12 @@ async function main() {
       date: new Date("2027-06-12T16:00:00.000Z"),
       venue: "The Golden Orchard Estate",
       venueAddress: "1200 Citrus Avenue, Laguna Beach, CA",
-      theme: "Radiant Citrus",
-      coverImage: "/images/cover.svg",
-      galleryImages: ["/images/gallery-1.svg", "/images/gallery-2.svg", "/images/gallery-3.svg"],
+      templateId: "royal-arch",
+      paletteId: "champagne",
+      coverImage: DEMO_COVER_IMAGE,
+      galleryImages: DEMO_GALLERY_IMAGES,
       status: WeddingStatus.CONFIRMED,
+      sections: { create: DEMO_SECTIONS.map((section) => ({ ...section })) },
     },
   });
 

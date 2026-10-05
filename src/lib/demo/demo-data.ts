@@ -1,5 +1,6 @@
 import type { AuthUser, Permission, WeddingRole } from "@/types/domain";
 import type { Guest, Rsvp, Wedding } from "@prisma/client";
+import { DEMO_COVER_IMAGE, DEMO_GALLERY_IMAGES, DEMO_SECTIONS } from "./demo-site";
 
 const WEDDING_DATE = new Date("2027-06-12T16:00:00.000Z");
 const CREATED_AT = new Date("2027-01-10T10:00:00.000Z");
@@ -14,9 +15,10 @@ const weddingRecord = {
   date: WEDDING_DATE,
   venue: "The Golden Orchard Estate",
   venueAddress: "1200 Citrus Avenue, Laguna Beach, CA",
-  theme: "Radiant Citrus",
-  coverImage: "/images/cover.svg",
-  galleryImages: ["/images/gallery-1.svg", "/images/gallery-2.svg", "/images/gallery-3.svg"],
+  templateId: "royal-arch",
+  paletteId: "champagne",
+  coverImage: DEMO_COVER_IMAGE,
+  galleryImages: DEMO_GALLERY_IMAGES,
   status: "CONFIRMED" as const,
   createdAt: CREATED_AT,
   updatedAt: UPDATED_AT,
@@ -88,6 +90,10 @@ function getMockWeddingStaff() {
 
 export function getMockWedding(): Wedding & { guests: (Guest & { rsvp: Rsvp | null })[] } {
   return mockWedding;
+}
+
+export function getMockSectionRows() {
+  return DEMO_SECTIONS.map((section) => ({ ...section }));
 }
 
 export function getMockWeddingStaffRole(_userId: string, _weddingId: string): WeddingRole | null {

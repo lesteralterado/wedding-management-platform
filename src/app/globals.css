@@ -22,6 +22,18 @@
   --radius-xl: 1rem;
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+
+  /* Wedding-site tokens, set per site by <ThemeScope> from the chosen template palette. */
+  --color-t-bg: var(--t-bg);
+  --color-t-surface: var(--t-surface);
+  --color-t-ink: var(--t-ink);
+  --color-t-ink-soft: var(--t-ink-soft);
+  --color-t-accent: var(--t-accent);
+  --color-t-accent-soft: var(--t-accent-soft);
+  --color-t-accent-text: var(--t-accent-text);
+  --font-t-heading: var(--t-font-heading);
+  --font-t-body: var(--t-font-body);
+  --font-t-script: var(--t-font-script);
 }
 
 :root {

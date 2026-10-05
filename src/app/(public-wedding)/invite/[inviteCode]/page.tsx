@@ -1,11 +1,24 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { InvitationPage } from "@/components/public/invitation-page";
-import { getGuestByInviteCode } from "@/features/guests/queries";
+import { WeddingSite } from "@/templates/registry";
+import { getInviteSite } from "@/templates/site";
 
-export default async function InvitePage({ params }: { params: Promise<{ inviteCode: string }> }) {
-  const { inviteCode } = await params;
-  const guest = await getGuestByInviteCode(inviteCode);
-  if (!guest) notFound();
+type Props = { params: Promise<{ inviteCode: string }> };
 
-  return <InvitationPage guest={guest} />;
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const site = await getInviteSite((await params).inviteCode);
+  // Personal invitations must never show up in search results.
+  if (!site) return { title: "Invitation not found", robots: { index: false } };
+
+  return {
+    title: `You're invited · ${site.wedding.brideName} & ${site.wedding.groomName}`,
+    robots: { index: false, follow: false },
+  };
+}
+
+export default async function InvitePage({ params }: Props) {
+  const site = await getInviteSite((await params).inviteCode);
+  if (!site) notFound();
+
+  return <WeddingSite site={site} />;
 }

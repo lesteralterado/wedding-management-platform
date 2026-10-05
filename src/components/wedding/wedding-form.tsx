@@ -10,41 +10,46 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils/cn";
 import { weddingSchema, type WeddingInput } from "@/features/wedding/schemas";
+import { DEFAULT_TEMPLATE_ID, TEMPLATES, getPalette, getTemplateInfo, type TemplateId } from "@/templates/catalog";
 import type { Wedding } from "@prisma/client";
-
-type WeddingFormValues = WeddingInput & { id?: string };
 
 export function WeddingForm({ wedding }: { wedding?: Wedding | null }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
+  const templateId = (getTemplateInfo(wedding?.templateId ?? DEFAULT_TEMPLATE_ID).id) as TemplateId;
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
-  } = useForm<WeddingFormValues>({
+  } = useForm<WeddingInput>({
     resolver: zodResolver(weddingSchema),
     defaultValues: {
-      brideName: wedding?.brideName ?? "Cherilyn",
-      groomName: wedding?.groomName ?? "Lester",
-      date: wedding?.date ? new Date(wedding.date).toISOString().slice(0, 10) : "2027-06-12",
-      venue: wedding?.venue ?? "The Golden Orchard Estate",
-      venueAddress: wedding?.venueAddress ?? "1200 Citrus Avenue, Laguna Beach, CA",
-      theme: wedding?.theme ?? "Radiant Citrus",
-      status: wedding?.status ?? "CONFIRMED",
-      coverImage: wedding?.coverImage ?? "/images/cover.svg",
+      brideName: wedding?.brideName ?? "",
+      groomName: wedding?.groomName ?? "",
+      date: wedding?.date ? new Date(wedding.date).toISOString().slice(0, 10) : "",
+      venue: wedding?.venue ?? "",
+      venueAddress: wedding?.venueAddress ?? "",
+      templateId,
+      paletteId: getPalette(templateId, wedding?.paletteId).id,
+      status: wedding?.status ?? "PLANNING",
+      coverImage: wedding?.coverImage ?? "",
       galleryImages: (wedding?.galleryImages as unknown as string[]) ?? [],
-      id: wedding?.id,
     },
   });
 
-  const onSubmit: SubmitHandler<WeddingFormValues> = async (values) => {
+  const selectedTemplate = getTemplateInfo(watch("templateId"));
+  const selectedPalette = watch("paletteId");
+
+  const onSubmit: SubmitHandler<WeddingInput> = async (values) => {
     setPending(true);
-    const endpoint = "/api/wedding";
-    const response = await fetch(endpoint, {
+    const response = await fetch("/api/wedding", {
       method: wedding ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(wedding ? { id: wedding.id, ...values } : values),
+      body: JSON.stringify(values),
     });
     setPending(false);
 
@@ -74,8 +79,18 @@ export function WeddingForm({ wedding }: { wedding?: Wedding | null }) {
       <Field label="Venue Address" error={undefined} className="lg:col-span-2">
         <Textarea {...register("venueAddress")} />
       </Field>
-      <Field label="Theme" error={errors.theme?.message}>
-        <Input {...register("theme")} />
+      <Field label="Template" error={errors.templateId?.message}>
+        <Select
+          {...register("templateId", {
+            // A colour story belongs to one template, so switching starts from the new template's first.
+            onChange: (event) => setValue("paletteId", getPalette(event.target.value, null).id),
+          })}
+        >
+          {TEMPLATES.map((template) => (
+            <option key={template.id} value={template.id}>{template.name}</option>
+          ))}
+        </Select>
+        <p className="mt-1 text-xs text-muted-foreground">{selectedTemplate.description}</p>
       </Field>
       <Field label="Status" error={undefined}>
         <Select {...register("status")}>
@@ -85,8 +100,31 @@ export function WeddingForm({ wedding }: { wedding?: Wedding | null }) {
           <option value="COMPLETED">Completed</option>
         </Select>
       </Field>
+      <fieldset className="lg:col-span-2">
+        <legend className="text-sm font-semibold leading-none">Colour story</legend>
+        <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {selectedTemplate.palettes.map((palette) => (
+            <label
+              key={palette.id}
+              className={cn(
+                "flex cursor-pointer items-center gap-3 rounded-2xl border p-3 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
+                selectedPalette === palette.id ? "border-accent bg-secondary" : "border-border hover:bg-secondary/60",
+              )}
+            >
+              <input type="radio" value={palette.id} {...register("paletteId")} className="sr-only" />
+              <span className="flex -space-x-1.5" aria-hidden>
+                {[palette.tokens.bg, palette.tokens.accent, palette.tokens.accentText].map((color) => (
+                  <span key={color} className="h-6 w-6 rounded-full border border-black/10" style={{ backgroundColor: color }} />
+                ))}
+              </span>
+              <span className="text-sm font-semibold">{palette.name}</span>
+            </label>
+          ))}
+        </div>
+        {errors.paletteId?.message && <p className="mt-1 text-sm text-destructive">{errors.paletteId.message}</p>}
+      </fieldset>
       <Field label="Cover Photo URL" error={undefined} className="lg:col-span-2">
-        <Input {...register("coverImage")} placeholder="/images/cover.svg" />
+        <Input {...register("coverImage")} placeholder="https://…" />
       </Field>
       <div className="lg:col-span-2">
         <Button className="w-full sm:w-auto" type="submit" disabled={pending}>

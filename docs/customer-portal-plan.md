@@ -306,6 +306,15 @@ Things to know before porting:
 - **Version gap.** The template uses Next 16 / React 18 / Tailwind 3, and this repo uses Next 15 / React 19 / Tailwind 4. `Image`'s `preload` prop becomes `priority`, and the `tailwind.config.ts` colours become `--t-*` CSS variables referenced from Tailwind 4 `@theme`.
 - **Scope the fonts.** Load template fonts only on the public wedding routes, not in the root layout, so the dashboard doesn't download Great Vibes.
 
+**As built in Phase 1** (where it differs from the notes above):
+
+- **Paper stays ivory.** The arch photo and the two section borders are opaque, painted on ivory paper. So Royal Arch colourways change the accent, ribbons and ink, and keep an ivory background (Champagne & Ivory, Sage & Linen, Dusty Rose, Terracotta). **Midnight & Gold is dropped for this template**; a dark palette fights the ivory artwork. It belongs to a future dark template.
+- **The RSVP frame isn't recoloured.** Extracted, `frame.svg` turned out to be a cream paper card and `flower.svg` white blossoms, both neutral. They're now transparent WebPs (620 KB → 40 KB and 487 KB → 58 KB) in their natural colours.
+- **Two accent tokens.** The template gold (`#b8963a`) is only ~2.6:1 on ivory, too faint for small text. Every palette has `accent` (decoration) and a deeper `accentText` (small text, buttons). A test enforces WCAG AA on all palettes.
+- **Wax seal monogram.** The door artwork has the letters "SLY" baked into its seal. A wax plate engraved with the couple's own initials now covers the lettering and swings with the door.
+- **Events live in section content.** `WeddingEvent` isn't a separate table yet: ceremony and reception are part of the `EVENTS` section's JSON. Move them to a table when the day-of program (Phase 4) needs to query them.
+- **The personal invitation uses the template too.** `/invite/[code]` renders the couple's site addressed to the guest ("Dear Mia,"), with their RSVP form and seat count built in.
+
 ### 5.3 Key guest screens to design first
 
 1. **Invite (closed doors) → open → RSVP**: already prototyped in the template.
@@ -400,7 +409,7 @@ Each phase ships something usable on its own.
 | Phase | Deliverable | Key tasks |
 | --- | --- | --- |
 | **0. Make it real** ✅ done 2026-10-06 | Dashboard runs on Postgres, and demo mode is just a seeded wedding | Replace `getMock*` reads with Prisma queries scoped to the logged-in user's wedding; real `getWeddingStaffRole`; RSVP writes to the DB; add `Guest.accessToken`; tests for RSVP + permissions |
-| **1. Template engine** | `/w/[slug]` rendered by Royal Arch, driven by data | `TemplateDefinition` + registry; `WeddingSection` model; port template-2 with props + `--t-*` tokens; mask-based frame recolouring; 4 palettes; current design becomes a second template ("Radiant Citrus") |
+| **1. Template engine** ✅ done 2026-10-06 (see "As built" in §5.2) | `/w/[slug]` rendered by Royal Arch, driven by data | `TemplateDefinition` + registry; `WeddingSection` model; port template-2 with props + `--t-*` tokens; mask-based frame recolouring; 4 palettes; current design becomes a second template ("Radiant Citrus") |
 | **2. Onboarding + Studio** | A new couple can sign up and see their own site | 5-step wizard with autosave; Studio with section list + live phone preview; feature toggles; slug picker |
 | **3. Publish + invitations + billing** | Couple pays, publishes and sends links | `Plan`/`Subscription`/`Payment` models; PayMongo + Stripe checkout and webhooks (one-time + monthly); grace-period handling; `canUse()` gating; personal `/i/[token]` flow; email sending + Messenger share button + OG link-preview image + sent/opened tracking; RSVP v2 (meal choice, +1 names, deadline); Digital Pass |
 | **4. Seating, menu, program** | Planning tools | Table CRUD + drag-and-drop seating (auto-group by `groupName`); menu courses linked to RSVP meal choice; program timeline; printable seating chart |
