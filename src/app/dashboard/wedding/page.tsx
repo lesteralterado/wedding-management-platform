@@ -11,14 +11,7 @@ import { getDashboardAccessOrRedirect } from "@/lib/wedding/current";
 export default async function WeddingPage() {
   const access = await getDashboardAccessOrRedirect();
   const wedding = access.wedding;
-  if (!wedding) {
-    return (
-      <Card>
-        <CardHeader><CardTitle>Create your wedding</CardTitle><CardDescription>Add the first wedding to unlock the dashboard.</CardDescription></CardHeader>
-        <CardContent><WeddingForm /></CardContent>
-      </Card>
-    );
-  }
+  if (!wedding) redirect("/onboarding");
 
   if (!hasPermission(access.user.role, access.weddingRole, "wedding:read")) redirect("/dashboard");
 

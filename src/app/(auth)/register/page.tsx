@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -45,8 +46,15 @@ export default function RegisterPage() {
       return;
     }
 
-    toast.success("Account created. Please sign in.");
-    router.push("/login");
+    // Sign straight in and continue to the wizard rather than asking for the password again.
+    const login = await signIn("credentials", { email: values.email, password: values.password, redirect: false });
+    if (login?.error) {
+      toast.success("Account created. Please sign in.");
+      router.push("/login");
+      return;
+    }
+    router.push("/onboarding");
+    router.refresh();
   }
 
   return (

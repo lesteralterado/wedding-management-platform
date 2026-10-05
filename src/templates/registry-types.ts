@@ -6,7 +6,8 @@ export type SectionProps<T extends SectionType> = { content: SectionContent<T>; 
 
 export type NavLink = { id: string; label: string };
 
-export type TemplateLayoutProps = { site: Site; nav: NavLink[]; children: ReactNode };
+/** `preview` is set inside the Studio, where opening animations would get in the way of editing. */
+export type TemplateLayoutProps = { site: Site; nav: NavLink[]; preview?: boolean; children: ReactNode };
 
 /** The React side of a template. Every template renders every section type. */
 export type TemplateDefinition = {

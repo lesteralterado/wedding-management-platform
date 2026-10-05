@@ -16,7 +16,7 @@ import { PhotographerDashboard } from "@/components/demo/photographer-dashboard"
 export default async function DashboardPage() {
   const access = await getDashboardAccessOrRedirect();
   const wedding = access.wedding;
-  if (!wedding) redirect("/dashboard/wedding");
+  if (!wedding) redirect("/onboarding");
 
   if (!hasPermission(access.user.role, access.weddingRole, "dashboard:read")) {
     redirect(access.weddingRole === "PHOTOGRAPHER" ? "/dashboard/gallery" : "/dashboard");

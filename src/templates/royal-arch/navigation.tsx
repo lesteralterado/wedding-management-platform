@@ -46,7 +46,7 @@ export function Navigation({ monogram, links }: { monogram: string; links: NavLi
       }`}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6">
-        <a href="#hero" onClick={(e) => handleNavClick(e, "hero")} className="font-t-script text-2xl tracking-widest text-t-accent-text">
+        <a href="#hero" onClick={(e) => handleNavClick(e, "hero")} className="rounded-full bg-t-bg/70 px-3 py-0.5 font-t-script text-2xl tracking-widest text-t-accent-text backdrop-blur-md md:bg-transparent md:p-0 md:backdrop-blur-none">
           {monogram}
         </a>
 

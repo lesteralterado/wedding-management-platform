@@ -11,6 +11,19 @@ export type SectionType = (typeof SECTION_TYPES)[number];
 
 const text = (max: number) => z.string().trim().max(max);
 
+/**
+ * Images couples link to. next/image throws on malformed sources, which would take the whole site
+ * down, so only absolute https URLs and site paths are accepted.
+ */
+export const imageUrlSchema = z
+  .string()
+  .trim()
+  .max(500)
+  .refine((value) => /^https:\/\/[^\s]+$/.test(value) || /^\/[^\s/][^\s]*$/.test(value), "Use an image link that starts with https://");
+
+/** An image field a couple may leave blank. */
+const optionalImage = z.union([imageUrlSchema, z.literal("")]).optional().transform((value) => value || undefined);
+
 export const sectionContentSchemas = {
   HERO: z.object({
     eyebrow: text(80).default("You are invited to the wedding of"),
@@ -19,7 +32,7 @@ export const sectionContentSchemas = {
     tag: text(40).default("Our Love Story"),
     title: text(80).default("How We Met"),
     chapters: z
-      .array(z.object({ label: text(24), title: text(80), text: text(1200), image: text(500).optional() }))
+      .array(z.object({ label: text(24), title: text(80), text: text(1200), image: optionalImage }))
       .max(6)
       .default([]),
   }),
@@ -106,7 +119,7 @@ function defaultContent(type: SectionType, wedding: SiteWedding): unknown {
 }
 
 /** A section with nothing to show is left off the page rather than rendered empty. */
-function hasContent(section: SiteSection, wedding: SiteWedding) {
+export function hasContent(section: SiteSection, wedding: Pick<SiteWedding, "galleryImages">) {
   switch (section.type) {
     case "STORY":
       return section.content.chapters.length > 0;
@@ -121,9 +134,31 @@ function hasContent(section: SiteSection, wedding: SiteWedding) {
   }
 }
 
+/** Every section type in page order, with its visibility and content, whether or not it has been saved. */
+export type EditableSection = SiteSection & { enabled: boolean };
+
 /**
- * Merges the couple's saved sections over the defaults. Every wedding gets a working site even
- * before it has any section rows. The hero always opens the page.
+ * Merges the couple's saved sections over the defaults, keeping hidden and empty ones (the Studio
+ * edits those too). The hero always opens the page and can't be hidden.
+ */
+export function resolveSections(rows: SectionRow[], wedding: Pick<SiteWedding, "venue" | "venueAddress">): EditableSection[] {
+  const byType = new Map(rows.map((row) => [row.type, row]));
+
+  return SECTION_TYPES.map((type, index) => {
+    const row = byType.get(type);
+    const content = parseContent(type, row ? row.content : defaultContent(type, wedding as SiteWedding));
+    return {
+      section: { type, content, enabled: type === "HERO" || (row?.enabled ?? true) } as EditableSection,
+      position: type === "HERO" ? -1 : (row?.position ?? index),
+    };
+  })
+    .sort((a, b) => a.position - b.position)
+    .map((item) => item.section);
+}
+
+/**
+ * Builds what a template renders. Every wedding gets a working site even before it has any
+ * section rows; hidden sections and sections with nothing to show are left out.
  */
 export function buildSite(input: {
   templateId: string | null;
@@ -133,16 +168,9 @@ export function buildSite(input: {
   guest?: SiteGuest | null;
 }): Site {
   const template = getTemplateInfo(input.templateId);
-  const rows = new Map(input.rows.map((row) => [row.type, row]));
-
-  const sections = SECTION_TYPES.map((type, index) => {
-    const row = rows.get(type);
-    const section = { type, content: parseContent(type, row ? row.content : defaultContent(type, input.wedding)) } as SiteSection;
-    return { section, enabled: type === "HERO" || (row?.enabled ?? true), position: type === "HERO" ? -1 : (row?.position ?? index) };
-  })
-    .filter((item) => item.enabled && hasContent(item.section, input.wedding))
-    .sort((a, b) => a.position - b.position)
-    .map((item) => item.section);
+  const sections = resolveSections(input.rows, input.wedding)
+    .filter((section) => section.enabled && hasContent(section, input.wedding))
+    .map(({ type, content }) => ({ type, content }) as SiteSection);
 
   return {
     templateId: template.id as TemplateId,

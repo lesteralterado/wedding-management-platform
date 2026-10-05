@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Building2, CalendarHeart, GalleryVerticalEnd, Home, Mail, Settings2, ShieldCheck, UsersRound } from "lucide-react";
+import { BarChart3, Building2, CalendarHeart, Paintbrush, GalleryVerticalEnd, Home, Mail, Settings2, ShieldCheck, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 import type { UserRole, WeddingRole } from "@/types/domain";
+import type { ShellWedding } from "./dashboard-shell";
 
 type NavItem = {
   href: string;
@@ -16,6 +17,7 @@ type NavItem = {
 
 const weddingNav: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: Home, roles: ["OWNER", "CO_ORGANIZER", "PLANNER", "STAFF", "RECEPTIONIST"] },
+  { href: "/dashboard/studio", label: "Studio", icon: Paintbrush, roles: ["OWNER", "CO_ORGANIZER"] },
   { href: "/dashboard/wedding", label: "Wedding Details", icon: CalendarHeart, roles: ["OWNER", "CO_ORGANIZER"] },
   { href: "/dashboard/guests", label: "Guests", icon: UsersRound, roles: ["OWNER", "CO_ORGANIZER", "PLANNER", "STAFF", "RECEPTIONIST"] },
   { href: "/dashboard/invitations", label: "Invitations", icon: Mail, roles: ["OWNER", "CO_ORGANIZER"] },
@@ -33,12 +35,13 @@ const platformNav: NavItem[] = [
   { href: "/platform/security", label: "Security", icon: ShieldCheck },
 ];
 
-export function AppSidebar({ collapsed, onToggle, mobile = false, userRole, weddingRole }: {
+export function AppSidebar({ collapsed, onToggle, mobile = false, userRole, weddingRole, wedding = null }: {
   collapsed: boolean;
   onToggle: () => void;
   mobile?: boolean;
   userRole?: UserRole;
   weddingRole?: WeddingRole | null;
+  wedding?: ShellWedding;
 }) {
   const pathname = usePathname();
   const nav = userRole === "SUPER_ADMIN" ? platformNav : weddingNav.filter((item) => !item.roles || item.roles.includes(weddingRole as WeddingRole));
@@ -48,8 +51,8 @@ export function AppSidebar({ collapsed, onToggle, mobile = false, userRole, wedd
       <div className="flex items-center justify-between gap-3 border-b border-border p-4">
         {!collapsed || mobile ? (
           <Link href={userRole === "SUPER_ADMIN" ? "/platform" : "/dashboard"} className="min-w-0">
-            <p className="font-display text-xl font-black text-foreground">{userRole === "SUPER_ADMIN" ? "WeddingFlow" : "Cherilyn & Lester"}</p>
-            <p className="text-xs text-muted-foreground">{userRole === "SUPER_ADMIN" ? "Platform Console" : "Wedding SaaS"}</p>
+            <p className="font-display text-xl font-black text-foreground">{userRole === "SUPER_ADMIN" ? "WeddingFlow" : (wedding?.names ?? "WeddingFlow")}</p>
+            <p className="text-xs text-muted-foreground">{userRole === "SUPER_ADMIN" ? "Platform Console" : "Wedding dashboard"}</p>
           </Link>
         ) : (
           userRole === "SUPER_ADMIN" ? <ShieldCheck className="h-7 w-7 text-accent" /> : <CalendarHeart className="h-7 w-7 text-accent" />
@@ -85,8 +88,8 @@ export function AppSidebar({ collapsed, onToggle, mobile = false, userRole, wedd
         <div className={cn("rounded-[1.25rem] bg-secondary p-4", collapsed && !mobile && "p-3 text-center")}>
           {(!collapsed || mobile) && (
             <>
-              <p className="font-display text-sm font-black">{userRole === "SUPER_ADMIN" ? "Platform access" : "Radiant Citrus"}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{userRole === "SUPER_ADMIN" ? "Manage tenants, users, and plans." : "Gold-orange wedding experience"}</p>
+              <p className="font-display text-sm font-black">{userRole === "SUPER_ADMIN" ? "Platform access" : (wedding?.templateName ?? "No template yet")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{userRole === "SUPER_ADMIN" ? "Manage tenants, users, and plans." : "Change your look in the Studio."}</p>
             </>
           )}
         </div>

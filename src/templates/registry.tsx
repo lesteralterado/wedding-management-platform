@@ -12,13 +12,13 @@ const templates: Record<TemplateId, TemplateDefinition> = {
 };
 
 /** Renders a wedding website (or a guest's personal invitation) with the couple's template and palette. */
-export function WeddingSite({ site }: { site: Site }) {
+export function WeddingSite({ site, preview = false }: { site: Site; preview?: boolean }) {
   const template = templates[site.templateId];
   const nav = site.sections.filter((section) => section.type !== "HERO").map((section) => SECTION_NAV[section.type]);
 
   return (
     <ThemeScope tokens={site.palette.tokens} fonts={template.fonts} className={template.fontClassName}>
-      <template.Layout site={site} nav={nav}>
+      <template.Layout site={site} nav={nav} preview={preview}>
         {site.sections.map((section) => (
           <Section key={section.type} template={template} section={section} site={site} />
         ))}

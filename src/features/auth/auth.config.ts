@@ -7,7 +7,7 @@ export const authConfig = {
   providers: [],
   callbacks: {
     authorized({ request, auth }) {
-      const protectedPaths = ["/dashboard"];
+      const protectedPaths = ["/dashboard", "/onboarding"];
       const { pathname } = request.nextUrl;
 
       if (!protectedPaths.some((path) => pathname.startsWith(path))) return true;

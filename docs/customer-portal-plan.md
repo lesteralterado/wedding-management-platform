@@ -59,7 +59,7 @@ Landing ─► Pick plan ─► Sign up ─► Onboarding wizard (5 steps) ─�
 | 4. What your guests will see | Feature cards (toggle on/off) | Locked cards show which plan unlocks them |
 | 5. Preview & publish | Phone + desktop preview, choose URL slug | Publishing is the payment moment (see §8) |
 
-Everything is saved as a draft after each step, so they can leave and return.
+Everything is saved as a draft after each step, so they can leave and return. *(As built: the draft is kept on the couple’s device until they press “Create my website”; the wedding is created in one step at the end.)*
 
 ### 3.2 Studio (the main editor after onboarding)
 
@@ -410,7 +410,7 @@ Each phase ships something usable on its own.
 | --- | --- | --- |
 | **0. Make it real** ✅ done 2026-10-06 | Dashboard runs on Postgres, and demo mode is just a seeded wedding | Replace `getMock*` reads with Prisma queries scoped to the logged-in user's wedding; real `getWeddingStaffRole`; RSVP writes to the DB; add `Guest.accessToken`; tests for RSVP + permissions |
 | **1. Template engine** ✅ done 2026-10-06 (see "As built" in §5.2) | `/w/[slug]` rendered by Royal Arch, driven by data | `TemplateDefinition` + registry; `WeddingSection` model; port template-2 with props + `--t-*` tokens; mask-based frame recolouring; 4 palettes; current design becomes a second template ("Radiant Citrus") |
-| **2. Onboarding + Studio** | A new couple can sign up and see their own site | 5-step wizard with autosave; Studio with section list + live phone preview; feature toggles; slug picker |
+| **2. Onboarding + Studio** ✅ done 2026-10-06 | A new couple can sign up and see their own site | 5-step wizard with autosave; Studio with section list + live phone preview; feature toggles; slug picker |
 | **3. Publish + invitations + billing** | Couple pays, publishes and sends links | `Plan`/`Subscription`/`Payment` models; PayMongo + Stripe checkout and webhooks (one-time + monthly); grace-period handling; `canUse()` gating; personal `/i/[token]` flow; email sending + Messenger share button + OG link-preview image + sent/opened tracking; RSVP v2 (meal choice, +1 names, deadline); Digital Pass |
 | **4. Seating, menu, program** | Planning tools | Table CRUD + drag-and-drop seating (auto-group by `groupName`); menu courses linked to RSVP meal choice; program timeline; printable seating chart |
 | **5. Day-of** | Works at the venue | Receptionist scanner with offline queue; `CheckIn` model; Guest Hub at `/i/[token]` and `/w/[slug]/live`; live check-in counter on the couple's dashboard; printable table QR cards |

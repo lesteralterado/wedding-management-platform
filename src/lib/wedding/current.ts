@@ -69,7 +69,7 @@ export async function getCurrentWeddingOrRedirect() {
 /** For pages: redirect away unless the current user may do `permission` on their wedding. */
 export async function requireWeddingAccess(permission: Permission): Promise<WeddingAccess> {
   const result = await authorizeWedding(permission);
-  if (!result.ok) redirect(result.status === 401 ? "/login" : "/dashboard");
+  if (!result.ok) redirect(result.status === 401 ? "/login" : result.status === 404 ? "/onboarding" : "/dashboard");
   return result.access;
 }
 

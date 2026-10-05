@@ -27,6 +27,15 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // The Studio shows its live preview in an iframe on the same site; still unframeable elsewhere.
+        // Listed last so it overrides the DENY above for this path.
+        source: "/studio-preview",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+        ],
+      },
     ];
   },
 };

@@ -6,23 +6,26 @@ import { MobileNav } from "./mobile-nav";
 import { RoleSwitcher } from "@/components/demo/role-switcher";
 import type { UserRole, WeddingRole } from "@/types/domain";
 
+export type ShellWedding = { names: string; templateName: string } | null;
+
 // The demo cookies are httpOnly, so demo state has to come from the server.
-export function DashboardShell({ children, userRole, weddingRole, isDemo = false }: {
+export function DashboardShell({ children, userRole, weddingRole, isDemo = false, wedding = null }: {
   children: React.ReactNode;
   userRole?: UserRole;
   weddingRole?: WeddingRole | null;
   isDemo?: boolean;
+  wedding?: ShellWedding;
 }) {
   const [collapsed, setCollapsed] = React.useState(false);
 
   return (
     <div className="flex min-h-screen">
       <div className="hidden h-screen sticky top-0 lg:flex">
-        <AppSidebar collapsed={collapsed} onToggle={() => setCollapsed((value) => !value)} userRole={userRole} weddingRole={weddingRole} />
+        <AppSidebar collapsed={collapsed} onToggle={() => setCollapsed((value) => !value)} userRole={userRole} weddingRole={weddingRole} wedding={wedding} />
       </div>
-      <div className="flex min-h-screen flex-1 flex-col">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-xl lg:hidden">
-          <MobileNav userRole={userRole} weddingRole={weddingRole} />
+          <MobileNav userRole={userRole} weddingRole={weddingRole} wedding={wedding} />
         </header>
         {isDemo && (
           <div className="border-b border-border bg-secondary/60 px-4 py-2">

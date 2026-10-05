@@ -7,11 +7,11 @@ import { Floral } from "./floral";
 import { IntroProvider } from "./intro-gate";
 import { Navigation } from "./navigation";
 
-export function RoyalArchLayout({ site, nav, children }: TemplateLayoutProps) {
+export function RoyalArchLayout({ site, nav, preview, children }: TemplateLayoutProps) {
   const { wedding } = site;
 
   return (
-    <IntroProvider monogram={[wedding.brideName.trim().charAt(0).toUpperCase(), wedding.groomName.trim().charAt(0).toUpperCase()]}>
+    <IntroProvider skip={preview} monogram={[wedding.brideName.trim().charAt(0).toUpperCase(), wedding.groomName.trim().charAt(0).toUpperCase()]}>
       <Navigation monogram={initials(wedding.brideName, wedding.groomName)} links={nav} />
       <main>{children}</main>
 

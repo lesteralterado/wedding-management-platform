@@ -42,10 +42,10 @@ const IntroContext = createContext({ revealed: true, done: true });
  */
 export const useIntro = () => useContext(IntroContext);
 
-/** `monogram` is engraved on the wax seal, e.g. ["C", "L"]. */
-export function IntroProvider({ monogram, children }: { monogram: [string, string]; children: ReactNode }) {
-  const [revealed, setRevealed] = useState(false);
-  const [done, setDone] = useState(false);
+/** `monogram` is engraved on the wax seal, e.g. ["C", "L"]. `skip` starts with the doors already open. */
+export function IntroProvider({ monogram, skip = false, children }: { monogram: [string, string]; skip?: boolean; children: ReactNode }) {
+  const [revealed, setRevealed] = useState(skip);
+  const [done, setDone] = useState(skip);
   const reveal = useCallback(() => setRevealed(true), []);
   const finish = useCallback(() => setDone(true), []);
 
