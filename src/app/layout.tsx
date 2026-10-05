@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import { Figtree, Outfit } from "next/font/google";
+import { Bodoni_Moda, Jost } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
-const outfit = Outfit({
+const bodoniModa = Bodoni_Moda({
   variable: "--font-display",
   subsets: ["latin"],
+  style: ["normal", "italic"],
 });
 
-const figtree = Figtree({
+const jost = Jost({
   variable: "--font-body",
   subsets: ["latin"],
 });
@@ -24,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${figtree.variable} h-full scroll-smooth`}>
+    <html lang="en" className={`${bodoniModa.variable} ${jost.variable} h-full scroll-smooth`}>
       <body className="min-h-full bg-background text-foreground antialiased" suppressHydrationWarning>
         {children}
         <Toaster richColors position="top-right" />

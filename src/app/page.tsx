@@ -50,7 +50,14 @@ export default function Home() {
           </Reveal>
           <Reveal delay={0.12}>
             <div className="rounded-4xl border border-border bg-card p-4 shadow-warm">
-              <div className="rounded-[1.6rem] bg-[radial-gradient(circle_at_top_left,#fff7df,transparent_18rem),linear-gradient(135deg,#f5b041,#e67e22)] p-6 text-white">
+              <div className="relative isolate overflow-hidden rounded-[1.6rem] p-6 text-white">
+                <Image
+                  src="/images/invite-card-bg.png"
+                  alt=""
+                  fill
+                  className="-z-20 object-cover"
+                />
+                <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/10 via-black/20 to-black/50" />
                 <div className="flex items-center justify-between">
                   <CalendarHeart className="h-10 w-10" />
                   <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-bold">RSVP 72%</span>
